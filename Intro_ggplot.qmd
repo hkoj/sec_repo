@@ -1,0 +1,60 @@
+---
+title: "ggplot"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| output: false
+#| message: false
+library(tidyverse)
+library(ggpubr)
+```
+
+## Intro ggplot
+
+```{r}
+ggplot(
+  data = mtcars, 
+  mapping = aes(x = disp, y = mpg)
+  ) + 
+  geom_point() + 
+  geom_smooth(level = 0.99) + 
+  geom_smooth(method = lm, colour = "red")
+```
+
+En annen måte å lage det samme plottet på (gg2).
+Det beste er å bruke første alternativ (gg1)
+
+ggarrange setter disse to identiske plottene vedsiden av hverandre.
+Dersom du skriver nrow = 2 vil du få plottene på to rekker
+
+```{r}
+gg1 <-   ggplot(data = mtcars, mapping = aes(x = disp, y = mpg)) +
+  geom_point()
+
+gg2 <-   ggplot(data = mtcars) + 
+  geom_point(mapping = aes(x = disp, y = mpg))
+
+ggarrange(gg1, gg2, labels = c
+          ("mapping = aes in ggplot", 
+            "mapping = aes in geom_*"
+            ),
+          nrow = 1)
+```
+
+geom_point ( ) har mapping som første argument.
+Dette har bare betydning dersom en ikke spesifiserer hvilket argument man bruker eks geom_point (data = mtcars, mapping( ).
+Du kan finne hvilke argumenter som skal stå i hvilken rekkefølge, så kan en søke opp geom_point opp i help fanen.
+En ryddig måte å lage et plott på er å uansett spesifisere argumentet selv om en skriver det i riktig rekkefølge
+
+```{r}
+ggplot(data = mtcars, mapping = aes
+       (x = disp, y = mpg, colour = factor(cyl))) + 
+  geom_point()
+```
+
+I dette plotet har vil lagt til en til faktor, slik at det til sammen blir 3 faktorer i samme plot.
+Vi bruker farge (eller andre symboler) til å differansiere hvor mange sylindre den enkelte bilen har
