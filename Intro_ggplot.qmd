@@ -52,9 +52,138 @@ En ryddig måte å lage et plott på er å uansett spesifisere argumentet selv o
 
 ```{r}
 ggplot(data = mtcars, mapping = aes
-       (x = disp, y = mpg, colour = factor(cyl))) + 
+       (x = disp, y = mpg, 
+         shape = factor(cyl), 
+         size = factor (cyl), 
+         colour = factor(cyl))) + 
   geom_point()
 ```
 
-I dette plotet har vil lagt til en til faktor, slik at det til sammen blir 3 faktorer i samme plot.
-Vi bruker farge (eller andre symboler) til å differansiere hvor mange sylindre den enkelte bilen har
+I dette plotet har vil lagt til en til variabel, slik at det til sammen blir 3 variabler i samme plot.
+Vi bruker farge (eller andre symboler) til å differansiere hvor mange sylindre den enkelte bilen har.
+
+Vi kan differansiere punktene med farge, form, størrelse og gjennomsiktighet.
+Dersom man ønsker å bruke disse differansieringsmulighetene må de stå inne i en asteticfunksjon (mappin = aes( )).
+Dersom en for eksempel sette farge på utsiden av denne asteticfunksjon, vil alle punktene få samme farge (colour = "blue").
+Står det innenfor en asteticfunksjon, så endres det for hver variabel, star det utenfor gjelder det samme for alle variablene
+
+```{r}
+ggplot() + 
+  geom_point(data = mtcars, mapping = aes
+       (x = disp, y = mpg, 
+         shape = factor(cyl), 
+         size = qsec, 
+         colour = factor(am),
+         alpha = wt))
+```
+
+Viktig å tenke på leser.
+Det kan fort bli rot dersom en putter for mye inn i samme plot.
+
+```{r}
+ggplot() +
+  geom_point(
+    data = mtcars,
+    mapping = aes(
+      x = disp, 
+      y = mpg, 
+      colour = factor(cyl),
+      alpha = 3.6*(0.25*1609.347)/qsec,
+      shape = factor(ifelse(am, "Man", "Aut"))
+      ),
+    size = 4
+    ) +
+  labs(
+    colour = "cyl", 
+    alpha = "speed\n(km/h)", 
+    shape = "trans-\nmission")
+```
+
+Vi kan lage egen tekst på forklaringstekst til høyre for plottet.
+Vi bruker funksjonen lads(.).
+Her betyr \\ linjeskjift i selve koden.
+i dette plottet har vi også bestemt at automatgir har fått en sirkel og manueltgir har fått en trekant.
+Der er ikke bare selve plottet som bør se ryddig ut, men også selve koden.
+Du kan selv forstå koden med en gang du skriver den, men kommer du tilbake om to uker, så er den kanskje ikke like lett å forstå lenger
+
+```{r}
+ggplot() +
+  geom_point(
+    data = mtcars,
+    mapping = aes(
+      x = disp,
+      y = mpg, 
+      colour = factor(cyl), 
+      size = 3.6*(0.25*1609.347)/qsec, 
+      shape = factor(
+        # Note codeing am
+        # 0 automatic, 1 manual
+        ifelse(
+          am, 
+          "Aut", 
+          "Man"
+          )
+        )
+      )
+    ) +
+  labs(
+    colour = "cyl", 
+    size = "speed\n(km/h)", 
+    shape = "trans-\nmission"
+    ) +
+  geom_smooth(
+    data = mtcars, 
+    mapping = aes(x = disp, y = mpg), 
+    colour = "yellow", 
+    span = 0.375,
+    level = 0.99
+    ) +
+   geom_smooth(
+    data = mtcars, 
+    mapping = aes(x = disp, y = mpg), 
+    colour = "yellow", 
+    span = 0.375,
+    level = 0.95
+    ) +
+  geom_smooth(
+    data = mtcars, 
+    mapping = aes(x = disp, y = mpg),
+    method = lm,
+    colour = "red"
+  )
+```
+
+Her er det lagt til en smooth som er en tilpasset linje som skal tilpasses etter punktene.
+Dette er et lag som blir lagt på toppen av ggplot.
+Dersom en ønsker å endre litt på denne linjen, går vi på hjelp for å se på de ulike opsjonene.
+I dette eksemplet bruker vi opsjonen span (på toppen av hjelp siden på geom_smooth kan en se hva som er standard på de ulike opsjonene).
+
+I dette eksemplet har vi også endret på konfogenten.
+For å se forskjell på 95 % og 99 % har vi lagt to like geom_smooth oppå hverandre, der den eneste forskjellen er kontofenten (level =)
+
+Til slutt har vi lagt inn en linjærlinje
+
+```{r}
+ggplot(
+  data = mtcars, 
+  mapping = aes(
+    x = disp, 
+    y = mpg
+    )
+  ) +
+  geom_point() +
+  geom_smooth(
+    method = "lm", 
+    se = FALSE
+    ) +
+  # robust lm
+  geom_smooth(
+    method = MASS::rlm, 
+    colour = 'Red', 
+    se = FALSE
+    )
+```
+
+Her har vi lagt til en robust linjærmodell.
+Denne tar bort de mest ekstreme verdiene.
+denne funsjonen ligger inne i pakken MASS og selve fusjonen heter rlm
