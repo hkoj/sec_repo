@@ -23,4 +23,11 @@ library(readxl)
         -   i dette tilfellet velger vi from Excel
     -   velg Browse og finn det aktuelle dokumentet.
     -   nå kan en velge dersom en ikke ønsker for eksempel de 3 første linjene for å få det mer oversiktelig.
--   
+    -   kopier koden som kommer opp i boksen nede til høyre og trykk close
+    -   åpne en ny chunk og lim inn koden som vist under
+        -   Dette fordi da blir det en del av dokumentet og det blir reprodusertbart
+
+```{r}
+arbeidsledig_rogaland99_02 <- read_excel("arbeidsledig_rogaland99_02.xlsx", 
+    skip = 2)
+```

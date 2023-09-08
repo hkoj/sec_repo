@@ -14,4 +14,6 @@ editor: visual
 -   bedre å gå gjennom prossessen med commit-pull-push flere ganger i tilfelle det skjer noe med vår egen datamaskin
 -   (oppskrift på oppretting av repro se side 4 av power point presentasjon på )
 -   Det er først når et dokument er lagret at git finner ut av at det er endringer og da kan ta prossessen commit-pull-push
+-   Før den siste commit-pull-push, er det greit å bruke save all først. Dette på grunn av dersom vi jobber i flere faner samtidig, så er det greit at alt blir lagret til github på en gang (så glemmer en ikke noe)
+-   Etter endt arbeidsøkt, er det greit å lukke prosjektet. da slipper en å endre noe som det ikke er meningen vi skal endre.
 -   
