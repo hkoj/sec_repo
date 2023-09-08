@@ -187,3 +187,170 @@ ggplot(
 Her har vi lagt til en robust linjærmodell.
 Denne tar bort de mest ekstreme verdiene.
 denne funsjonen ligger inne i pakken MASS og selve fusjonen heter rlm
+
+```{r}
+## create tibble from scratch
+df_mean <-   tibble(
+  cyl = c("avg. car 4 cyl.", "avg. car 6 cyl.", "avg. car 8 cyl."), 
+  mpg = c(22.66, 17.74, 15.10), 
+  disp = c(105.14, 183.31, 353.10)
+  )
+df_mean
+```
+
+Dersom en ønsker flere datasett inn i samme plott, kan vi lage et nytt datasett.
+I dette tilfellet er det regnet ut gjennomsnitt på 4, 6 og 8 sylindre
+
+```{r}
+ggplot(
+  data = mtcars, 
+  mapping = aes(x = disp, y = mpg)
+  ) +
+  geom_point(
+    mapping = aes(colour = factor(cyl))
+    ) +
+  geom_smooth(
+    method = "lm", 
+    se = FALSE
+    ) +
+  geom_smooth(
+    method = MASS::rlm, 
+    colour = 'Red', 
+    se = FALSE
+    ) +
+  geom_point(
+    data = df_mean, 
+    mapping = aes(x = disp, y = mpg), 
+    colour = "black", 
+    size = 3
+    ) +
+  geom_text(
+    data = df_mean, 
+    mapping = aes(x = disp, y = mpg, label = cyl), 
+    colour = "black", 
+    vjust = 1.5
+    )
+```
+
+Her lager vi plott oppå plott i kombinasjon med eget datasett
+
+## Tre eller fire variabler
+
+I disse tilfellene er det enklere å mest oversiktelig å lage flere underplott.
+
+```{r}
+ggplot(
+  data = mtcars, 
+  mapping = aes(
+    x = hp, 
+    y = 1609.347/(2*qsec^2)
+    )
+  ) +
+  facet_wrap(~cut_number(wt, n =3)) +
+  geom_point(
+    aes(colour = cut_number(
+      wt, 
+      n = 3)
+      )
+    ) +
+  geom_smooth(
+    method = "lm", 
+    mapping = aes(colour = cut_number(wt, n = 3)),
+    se = FALSE
+    )
+```
+
+Her er det funksjonen facet_wrap (\~cut_numer).
+n=3 betyr at variabelen skal deles opp i 3 ulike kategorier
+
+```{r}
+#new dataframe to use for the grey points
+hp_acc <- data.frame(
+  hp = mtcars$hp, 
+  acc = 1609.347/(2*mtcars$qsec^2)
+  )
+
+ggplot(
+  data = mtcars, 
+  mapping = aes(x = hp, y = 1609.347/(2*qsec^2))
+  ) +
+  geom_point(
+    data = hp_acc, 
+    mapping = aes(x = hp, y = acc), colour = "grey80"
+    ) +
+  facet_wrap(
+    ~cut_number(
+      wt, 
+      n =3 , 
+      labels = c("Light", "Medium", "Heavy")
+      )
+    ) +
+  geom_point(
+    mapping = aes(colour = cut_number(
+      wt, 
+      n = 3, 
+      labels = c("Light", "Medium", "Heavy")
+      )
+      ),
+    show.legend = TRUE
+    ) +
+  geom_smooth(
+    method = "lm", 
+    se = FALSE
+    ) +
+  labs(
+    y = "Mean acceleration (m/s^2)", 
+    colour = "Weight"
+    )
+```
+
+I dette plottet har vi fått inn alle variablene inn på samme plott.
+Dette for å se hvordan datasettet ser ut som en helhet.
+Det er bare de variablene som er aktuelle i vektklassen som har farge.
+Vi gjør dette med å legge inn ett gråt plott helt i bunn.
+
+```{r}
+ggplot(
+  data = mtcars, 
+  mapping = aes(x = hp, y = 1609.347/(2*qsec^2))
+  ) +
+  geom_point(
+    data = hp_acc, 
+    mapping = aes(x = hp, y = acc), 
+    colour = "grey80"
+    ) +
+  facet_grid(
+    factor(cyl)~cut_number(
+      wt, 
+      n =3 , 
+      labels = c("Light", "Medium", "Heavy"))
+    ) +
+  geom_point(
+    mapping = aes(
+      colour = cut_number(
+        wt, 
+        n = 3, 
+        labels = c("Light", "Medium", "Heavy")
+        )
+      ),
+    show.legend = FALSE
+    ) +
+  geom_smooth(
+    method = "lm", 
+    se = FALSE
+    ) +
+  labs(
+    y = "Mean acceleration", 
+    colour = "Weight"
+    )
+```
+
+Dette plottet viser flott at det for eksempel ikke finne tunge bilder som har 4 eller 6 sylinder motor.
+Dette får vi til med å bruke funksjonen facet_grid.
+Her er sylinder satt som fastvariabel, men vekt er satt som ???????
+
+## Andre type grafikk i Rstudio
+
+Vi velger å bruke ggplot.
+Dette er et mer moderne pakke og jobber godt med tidyvers.
+Greit dersom en skal bruke bare en variabel (eks histogram)

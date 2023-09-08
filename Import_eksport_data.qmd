@@ -1,0 +1,26 @@
+---
+title: "Importere_eksportere_data"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| output: false
+#| message: false
+library(tidyverse)
+library(ggpubr)
+library(readxl)
+```
+
+## Intro
+
+-   SSB er en viktig datakilde
+    -   De lager datasett i tabell (statestikkbanken på SSB sine nettsider
+    -   importer tabellen til egenmaskin på excel. Legg excel filen i mappen til reproet
+    -   gå inn i rstudio og enviroment, trykk ned import datasett.
+        -   i dette tilfellet velger vi from Excel
+    -   velg Browse og finn det aktuelle dokumentet.
+    -   nå kan en velge dersom en ikke ønsker for eksempel de 3 første linjene for å få det mer oversiktelig.
+-   

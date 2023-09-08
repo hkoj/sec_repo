@@ -1,0 +1,17 @@
+---
+title: "Workflow"
+format: html
+editor: visual
+---
+
+## Introduksjon
+
+-   Skal alltid starte et nytt repro/prosjekt på Github. Kan også starte nytt repro i Rstudio, men mye enklere å starte i github.
+-   skal alltid ha en .gitignore. Start med dette for å unngå at Rstudio/git gjør automatiske lagringer
+-   start med en pull når eg er komt til rsudio
+-   greit å redigere .gitignore, her kan vi legge til preferanser
+-   dess bedre commit message vi skriver, jo enklere kan det vær i ettertid for å muligens finne feil og vite hva vi har gjort
+-   bedre å gå gjennom prossessen med commit-pull-push flere ganger i tilfelle det skjer noe med vår egen datamaskin
+-   (oppskrift på oppretting av repro se side 4 av power point presentasjon på )
+-   Det er først når et dokument er lagret at git finner ut av at det er endringer og da kan ta prossessen commit-pull-push
+-   
