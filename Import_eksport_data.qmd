@@ -31,3 +31,27 @@ library(readxl)
 arbeidsledig_rogaland99_02 <- read_excel("arbeidsledig_rogaland99_02.xlsx", 
     skip = 2)
 ```
+
+-   Rstudio vil at et variabelnavn skal starte med en bokstav. Vi skal senere se på hvordan vi kan endre variabelnavn
+
+-   Dersom en ikke ønsker Excel format når vi laster ned fra SSB, kan vi trykke lagre data som til venstre meny når vi har fått opp forhåndsvisningen av datasettet.
+
+    -   dersom vi ikke velger Excel, bruker vi alternativet "semikolonseparert uten overskrift (csv)". Dette er den norske standarden der kolonner blir adskilt med semikolon
+    -   når eg skal bruke CSV fil, må en velge alternativ "from text (reader)". Når eg laster opp valg, er det en stor sannsynlighet for av vi får ein feilmelding. Trykk ok og derretter contigure. endre der det står encoding til ISO-8859-1 og eventuelt andre endringer
+    -   
+
+```{r}
+
+X10540_99_02_csv <- read_delim(
+  "10540_20230908-113355.csv", 
+  delim = ";", 
+  escape_double = FALSE, 
+  locale = locale(
+    date_names = "nb", 
+    encoding = "ISO-8859-1"
+    ), 
+  trim_ws = TRUE, 
+  skip = 1
+  )
+
+```
