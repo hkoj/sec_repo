@@ -32,7 +32,8 @@ arbeidsledig_rogaland99_02 <- read_excel("arbeidsledig_rogaland99_02.xlsx",
     skip = 2)
 ```
 
--   Rstudio vil at et variabelnavn skal starte med en bokstav. Vi skal senere se på hvordan vi kan endre variabelnavn
+-   Rstudio vil at et variabelnavn skal starte med en bokstav.
+    Vi skal senere se på hvordan vi kan endre variabelnavn
 
 -   Dersom en ikke ønsker Excel format når vi laster ned fra SSB, kan vi trykke lagre data som til venstre meny når vi har fått opp forhåndsvisningen av datasettet.
 
@@ -53,5 +54,57 @@ X10540_99_02_csv <- read_delim(
   trim_ws = TRUE, 
   skip = 1
   )
+
+```
+
+```{r}
+summary(X10540_99_02_csv)
+```
+
+-   Dersom en skal skrive ut excel filer, er det anbefalt å bruke writexl pakken i RStudio
+-   Når eg skal ha data fra SSB kan en også bruke pakken PxWebApiData. Med denne pakken kan en hente ønsket data direkte fra SSB uten å måtte gå inn på deres nettside
+    -   ulempe: vi må gjette litt på verdiene, når vi skal spesifisere det vi ønsker
+-   
+
+```{r}
+library(PxWebApiData)
+meta_data <-ApiData(
+  "https://data.ssb.no/api/v0/no/table/10540/",
+  returnMetaFrames = TRUE)
+```
+
+```{r}
+meta_data_13891 <- ApiData(
+  "https://data.ssb.no/api/v0/no/table/13891/",
+  returnMetaFrames = TRUE)
+```
+
+-   For å finne korrekt nettadresse til denne funksjonen, må man først lage tabellen på SSB sine nettsider. Derretter trykk ned der det står "API-spørring for denne tabellen" kopier URL og lim inn i koden
+-   Dersom du ønsker informasjon fra en annen tabell og har denne URL koden, bytter du bare til nummeret på tabellen
+
+```{r}
+unemp99to02 <- ApiData(
+  "http://data.ssb.no/api/v0/en/table/10540",
+  # Have not been able to specify more complex regions
+  Region = list("11*"),
+  Tid = c(paste(
+    rep(1999:2002, each = 12), 
+    "M",
+    sprintf("%02d", 1:12), 
+    sep = "")
+    ),
+  Alder = "15-29"
+  )
+```
+
+-   Her ønsker vi å finne ledighetstall for Rogaland. Derfor bruker vi 11\* for Region = list
+-   for å spesifisere hvilke år og tidsperiode en ønsker, bruker vi funksjonen paste
+    -   ettersom det her er tall for alle månedene, lager vi en vektor ( jeg vil ha 12 tall for 1999, 12 tall for 2000...)
+-   sprintf ("%02d") sier at vi ønsker to tall og dersom det ikke er to tall så ønsker jeg at det skal komme en 0 forran tallet (eks 1=01)
+    -   For å se hva en enkel linje i en chunk vil bli, marker det du ønsker å de trykk CTRL+Enter
+-   sep = "", betyr at det ikke skal vær mellomrom mellom elementene
+-   Her får en to datasett. De ene er beskrivende og det andre som selve datasettet. For å slå sammen disse skriver en unemp99to02 \<- ApiData12 helt i starten av chunken
+
+```{r}
 
 ```
