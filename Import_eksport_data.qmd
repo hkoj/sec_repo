@@ -12,6 +12,7 @@ editor: visual
 library(tidyverse)
 library(ggpubr)
 library(readxl)
+library(PxWebApiData)
 ```
 
 ## Intro
@@ -83,7 +84,7 @@ meta_data_13891 <- ApiData(
 -   Dersom du ønsker informasjon fra en annen tabell og har denne URL koden, bytter du bare til nummeret på tabellen
 
 ```{r}
-unemp99to02 <- ApiData(
+unemp99to02 <- ApiData12(
   "http://data.ssb.no/api/v0/en/table/10540",
   # Have not been able to specify more complex regions
   Region = list("11*"),
@@ -106,5 +107,6 @@ unemp99to02 <- ApiData(
 -   Her får en to datasett. De ene er beskrivende og det andre som selve datasettet. For å slå sammen disse skriver en unemp99to02 \<- ApiData12 helt i starten av chunken
 
 ```{r}
-
+#| label: StudyArea
+knr = c("1101", "1102", "1103", "1104")
 ```

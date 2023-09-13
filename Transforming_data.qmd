@@ -1,0 +1,93 @@
+---
+title: "Transforming_data"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| output: false
+#| message: false
+library(tidyverse)
+library(nycflights13)
+library(styler)
+```
+
+## Intro
+
+-   et av de mest essensielle temane vi skal ha i dette semesteret
+-   finn lenke til youtube video angående en guide for Rstudio. Denne lenken finner du i foilsettet fra forelesning (exploring data -\> kapitel 5)
+-   vil lære hvordan vi manipulerer data fra et datasett
+-   en liten ordliste finner også i foilsettet
+    -   `filter()`: (plukker ut rekker) plukker ut subsett. filtrerer hvilke opplysninger vi ønsker. Inne i ( ) skriver vi hva som må tilfredsstilles for at data skal bli med. Dersom en øsnker flere filter, er den beste måten å ha flere filter under hverandre ( flere filter komandoer)
+    -   `arrange()`: endrer rekkefølge på datapunktene. Endrer ikke noe annet. Bytter bare rekkefølge etter eget behov
+    -   `select()`: plukker ut variabler (kolonner vi er innteresert i) vi er interessert i
+    -   `mutate()`: brukes til å lage nye variabler
+        -   `transmute()` tar kun vare på den nye variabelen og kaster all de gamle dataene
+
+        -   `rename()`: endrer navn på en variabel
+    -   `summarise()` and `group_by()`: Group_by grupperer variabler, summarise summerer det som er gjort av group_by (eks grupperer antall flygninger på dager, summarise teller opp hvor mange flygninger det var på disse dagene) (`max`, `min`, `mean`, `median`, `sd` etc.)
+    -   The functions above are from the `dplyr` package which is part of the `tidyverse`.
+-   VI skal i dette kapittelet bruke mye datasettet nycflights13
+
+## Pipes
+
+-   tre ekvivalente måter å jobbe på
+    -   funskjon i funksjon i funksjon i funksjo...
+
+        ```{r}
+        set.seed(1234)
+        res_mean_rnorm_3dig <- paste("Result:", round(mean(rnorm(n = 10, mean = 0, sd = 1)), digits = 3), sep = "")
+        res_mean_rnorm_3dig
+        ```
+
+    -   midlertidlige variabler
+
+        ```{r}
+        set.seed(1234)
+        res_rnorm <- rnorm(n = 10, mean = 0, sd = 1)
+        res_mean_rnorm <- mean(res_rnorm)
+        res_mean_rnorm_3dig <- round(res_mean_rnorm, digits = 3)
+        res_mean_rnorm_3dig_string <- paste("Result:", res_mean_rnorm_3dig, sep = "")
+        # print result
+        res_mean_rnorm_3dig_string
+        ```
+
+        ```{r}
+        # cleanup
+        rm(res_rnorm, res_mean_rnorm, res_mean_rnorm_3dig, res_mean_rnorm_3dig_string)
+        ```
+
+    -   pipe
+
+        ```{r}
+        set.seed(1234)
+        res_mean_rnorm_3dig_string <- 
+          rnorm(n = 10, mean = 0, sd = 1) %>%
+          mean() %>%
+          round(digits = 3) %>% 
+          # The dot '.' is to show where the content of the pipe should be put
+          paste("Result:", .)
+        res_mean_rnorm_3dig_string
+        ```
+
+        -   
+
+```{r}
+set.seed(1234)
+rnorm(
+  n = 10,
+  mean = 0,
+  sd = 1
+) %>%
+  mean() %>%
+  round(digits = 3) %>% 
+  paste("Result:", .) -> res_mean_rnorm_3dig_string
+res_mean_rnorm_3dig_string
+```
+
+```{r}
+# what size is it
+dim(flights)
+```
