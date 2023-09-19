@@ -1,0 +1,221 @@
+---
+title: "transformin_data_denne_virker"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| output: false
+#| message: false
+library(tidyverse)
+library(nycflights13)
+library(styler)
+```
+
+## Intro
+
+-   et av de mest essensielle temane vi skal ha i dette semesteret
+-   finn lenke til youtube video angående en guide for Rstudio. Denne lenken finner du i foilsettet fra forelesning (exploring data -\> kapitel 5)
+-   vil lære hvordan vi manipulerer data fra et datasett
+-   en liten ordliste finner også i foilsettet
+    -   `filter()`: (plukker ut rekker) plukker ut subsett. filtrerer hvilke opplysninger vi ønsker. Inne i ( ) skriver vi hva som må tilfredsstilles for at data skal bli med. Dersom en øsnker flere filter, er den beste måten å ha flere filter under hverandre ( flere filter komandoer)
+    -   `arrange()`: endrer rekkefølge på datapunktene. Endrer ikke noe annet. Bytter bare rekkefølge etter eget behov
+    -   `select()`: plukker ut variabler (kolonner vi er innteresert i) vi er interessert i
+    -   `mutate()`: brukes til å lage nye variabler
+        -   `transmute()` tar kun vare på den nye variabelen og kaster all de gamle dataene
+
+```{r}
+set.seed(1234)
+res_mean_rnorm_3dig <- paste("Result:", round(mean(rnorm(n = 10, mean = 0, sd = 1)), digits = 3), sep = "")
+res_mean_rnorm_3dig
+```
+
+-   `rename()`: endrer navn på en variabel
+
+<!-- -->
+
+-   `summarise()` and `group_by()`: Group_by grupperer variabler, summarise summerer det som er gjort av group_by (eks grupperer antall flygninger på dager, summarise teller opp hvor mange flygninger det var på disse dagene) (`max`, `min`, `mean`, `median`, `sd` etc.)
+-   The functions above are from the `dplyr` package which is part of the `tidyverse`.
+
+<!-- -->
+
+-   VI skal i dette kapittelet bruke mye datasettet nycflights13
+
+## Pipes
+
+-   tre ekvivalente måter å jobbe på
+    -   funskjon i funksjon i funksjon i funksjo...
+
+```{r}
+set.seed(1234)
+res_mean_rnorm_3dig <- paste("Result:", round(mean(rnorm(n = 10, mean = 0, sd = 1)), digits = 3), sep = "")
+res_mean_rnorm_3dig
+```
+
+-   midlertidlige variabler
+
+```{r}
+set.seed(1234)
+res_rnorm <- rnorm(n = 10, mean = 0, sd = 1)
+res_mean_rnorm <- mean(res_rnorm)
+res_mean_rnorm_3dig <- round(res_mean_rnorm, digits = 3)
+res_mean_rnorm_3dig_string <- paste("Result:", res_mean_rnorm_3dig, sep = "")
+# print result
+res_mean_rnorm_3dig_string
+```
+
+```{r}
+# cleanup
+rm(res_rnorm, res_mean_rnorm, res_mean_rnorm_3dig, res_mean_rnorm_3dig_string)
+```
+
+-   pipe
+
+```{r}
+set.seed(1234)
+res_mean_rnorm_3dig_string <- 
+  rnorm(n = 10, mean = 0, sd = 1) %>%
+  mean() %>%
+  round(digits = 3) %>% 
+  # The dot '.' is to show where the content of the pipe should be put
+  paste("Result:", .)
+res_mean_rnorm_3dig_string
+```
+
+```{r}
+#| paged.print: false
+mtcars
+```
+
+```{r}
+#| paged.print: false
+mtcars |> 
+  as_tibble(rownames = "model") |>
+  arrange(cyl, hp) |>
+  print(n = 20) 
+```
+
+-   fordel med en tibbel fremfor dataframe, er at den ikke spyr ut hele datasettet. Printer en dataframe, viser alle tallene
+-   en tibbel vil skrive øverst hvor mange rekker og kollonner helt oppe, den vil også vise hvor mange kolonner det er plass til og printe de ti første rekkene og skrive hvor mange rekker den ikke printer (en kan også skrive i funksjonen hvor dersom man ønsker flere rekker printer
+    -   dersom man ønsker å sortere i synkende rekkefølge bruker man desc( ) i funksjonen arrange = arrange(cyl, desc(hp))
+        -   kan også bruke - forran det som står inne i arrange. Dersom det en ønsker å sortere er tekst, må man bruke den ordentlig måten
+-   i chunken øverst viser hvordan man i en tibbel kan hvordan datasette kan sorteres etter antall cylinder og deretter hestekrefter
+-   \|\> er den nye r standaren for en Pipe
+    -   Pipe gjør at vi ikke trenger å lage midlertidige variabler. Dette ordner Pipen selv og seltter også i mellomtiden det som ikke trengs lenger
+    -   dersom en har behov for å lagre dataen i mellomtiden må en bruke tegnsettingen %\>% før og data = . etter det en ønsker å lagre
+-   tibbelen vil automatisk ikke ta med radnavnet, dersom en ønsker dette må en inni argumentet as.tibbel skrive rownames og hvilket navn du ønsker på kolonnen
+
+```{r}
+data.frame(x = rnorm(2000), y = rnorm(2000, 2, 4))
+```
+
+```{r}
+#| paged.print: false
+my_mtcars <- mtcars |> 
+  as_tibble(rownames = "model") |>
+  select(model:wt) |>
+  select(model, vekt = wt, everything()) |>
+  arrange(cyl, desc(hp)) |>
+  print(n = 20) 
+```
+
+-   vi ser fra skjemaet over at tibbelen fikk litt for mange kolonner, vi kan begrense kolonnene med å bruke funksjonen selekt( )
+
+    -   her vil vi ha kolonnene fra model til og med vs vi skriver derfor select(model:vs)
+
+-   select har mange triks. Man kan endre rekkefølgen på kolonnen
+
+    -   kan skrive det på denne måten
+
+        select(model, wt, mpg:drat, qsec:vs)
+
+    -   eller på denne måten
+
+        select(model, wt, everything())
+
+-   kan også endre variabelnavn ved hjelp av select. dette kan en gjøre samtidig som en sortere variablene
+
+    select(model, vekt = wt, everything())
+
+-   Det som skrives inne i en Pipe, vil ikke bli lagret som et datasett. Dersom en ønsker å ta vare på Pipen og kanskje bruke oppsettet i andre chunker, må vi legge det inn i et nytt datasett på følgende måte helt i starten av chunken
+
+    my_mtcars \<- mtcars
+
+```{r}
+my_mtcars
+```
+
+## Velge ut et subset av et datasett
+
+```{r}
+my_mtcars |>
+  filter(cyl == 6) |>
+  select(model) |>
+  arrange(model) |>
+  pull()
+```
+
+-   for å teste for likhet må du bruke to =
+    -   når eg bruker denne plukker de bare de bilene som har 6 cylindre
+-   av de som har 6 cylindre velger vi bare å vise model
+-   En tibbel vil alltid gi en ny tibbel, men vi vil ha en vektor. vi bruker derfor funksjonen pull( )
+    -   dersom en har to variabel og bruker pull, vil de bare komme med den ene variabelen som svar.
+
+```{r}
+my_mtcars |>
+  group_by(cyl) |>
+  summarise(max_hp = max(hp))
+```
+
+-   vi vil nå finne ut hvilken bil i hver gruppe Cylinder (4, 6, 8) som har mest hestekrefter
+    -   først grupperer vi sammen like cylindere og så finne et sammedrag av hver gruppe
+
+```{r}
+my_mtcars |>
+  group_by(cyl) |>
+  summarise(sum_hp = sum(hp))
+```
+
+-   Her har vi funnet samlet sum av hestekreftene i angitt gruppe
+
+```{r}
+my_mtcars |>
+  group_by(cyl) |>
+  summarise(mean_hp = round(mean(hp), digits = 1))
+```
+
+-   Her har vi funnet gjennomsnittet av hestekreftene i hver gruppe
+    -   vi har også rundet av og lagt til bare et desimaltall
+
+```{r}
+my_mtcars |>
+  group_by(cyl) |>
+  summarise(mean_disp = round(mean(disp), digits = 1))
+```
+
+-   Her er det funnet gjennomsnitlig (mean) av cylindervolum (disp)
+
+## lage nye variabler
+
+-   dette gjørs med funksjonen mutate
+
+```{r}
+my_mtcars <- my_mtcars |>
+  mutate(
+    hp_vs_disp = hp/disp
+  )
+```
+
+-   først legger vi til nytt navn (hestekrefter vs cylindervolum)
+    -   navnet på den nye kolonnen til høyre for =
+    -   til venstre for = skal det stå hvordan vil vil regne det ut
+
+```{r}
+my_mtcars |>
+  group_by(cyl) |>
+  summarise(mean_vs = round(mean(hp_vs_disp), digits = 3))
+```
+
+-   Her har vi tatt gjennomsnittet på hvordan
