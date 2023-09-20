@@ -395,9 +395,135 @@ flights |>
   nrow()
 ```
 
--   i 2013 hvor mange flyvinger hadde en annkomst forsinkelse mer enn 15 og mindre enn 30 min
+-   i 2013 hvor mange flyvinger hadde en annkomst forsinkelse mer enn eller lik 15 min og mindre enn 30 min
 
 ```{r}
 flights |>
-  
+  filter(arr_delay >= 15 & arr_delay < 30) |>
+  select(arr_delay) |>
+  nrow()
+```
+
+-   Dersom en observersjon er NA (ukjent) vil resultatet som regel bli NA
+    -   dersom en for eksempel skal rekne ut gjennomsnitt
+-   for å skjekke om det er noe NA i datasettet kan en bruke fujon is.na( ) dersom det er NA verdier vil dette bli true
+    -   Husk at true blir gjort om til 1 og false til til 0. vi kan derfor summere is.na( ) for å finne hvor mange NA vi har i datasettet på den enkelte variabelen
+
+```{r}
+sum(is.na(flights$arr_delay))
+```
+
+## select
+
+-   her kan vi velge ut hvilke variabler vi vil ha med oss videre
+-   kjekk å bruke i store datasett med mange variabler, kan velge vekk hvilke variabler vi ikke vil ha med oss videre
+
+```{r}
+# dropper variabelen year
+flights <- flights |>
+  select(-year)
+```
+
+-   Dersom vi skal ha med alle variablene, men endre rekkefølge, kan en gjøre det på følgende måte. For at vi ikke skal måtte sitte helt på slutten å ramse opp de resterende variablene, kan vi bruke funksjonen everything( )
+
+```{r}
+flights <- flights |>
+  select(month, day, carrier, tailnum, everything())
+```
+
+-   vi kan endre navn på en variabel inne i select komandoen
+
+```{r}
+# vi henter inn nycflights på ny for å starte uten de endringene vi har gjort
+flights <- nycflights13::flights
+```
+
+```{r}
+flights <- flights |>
+  select(-year) |>
+  select(month, 
+         day, 
+         flyselskap = carrier, 
+         halenummer = tailnum, 
+         everything()
+         ) |>
+  #setter tilbake til engelsk navn ved hjelp av rename(), setter det gamle navnet til venstre for = og det gamle til høyre
+  rename(
+    carrier = flyselskap,
+    tailnum = halenummer
+  ) 
+```
+
+-   hvordan finner vi median arr_delay for mai
+
+```{r}
+arr_delay_may <- flights |>
+  select(day, month, arr_delay) |>
+  filter(month == 5) |>
+  select(-month) |>
+  print()
+```
+
+-   gjennomsnitt ankomstforsinkelse de ulike dagene i mai
+
+```{r}
+#| paged.print: false
+arr_delay_may |>
+  group_by(day) |>
+  summarise(
+    gjennomsnittlig_f = round(
+      mean(
+      arr_delay, na.rm = TRUE), 
+      digits = 2),
+    median_f = median(arr_delay, na.rm = TRUE),
+    min_f = min(arr_delay, na.rm = TRUE),
+    max_f = max(arr_delay, na.rm = TRUE),
+    total_f = sum(arr_delay, na.rm = TRUE)) |>
+  print(n = 31)
+```
+
+-   de to hovedtingene vi trenger til å jobbe i R er filter( ) og select( )
+
+## Mutate, lage nye verdier/variabler
+
+```{r}
+my_new_data <- flights |>
+  select(month:day, ends_with("delay"), distance, air_time) |>
+  mutate(
+    gain = dep_delay - arr_delay,
+    speed = (distance/air_time) * 60
+    ) |>
+  select(month:day, gain, everything()) |>
+  arrange(gain)
+head(my_new_data, n = 5) 
+```
+
+-   ends_with( ) velger i ut variabler som endre med spesifik tekst
+    -   i dette tilfellet er det dep_delay og arr_delay. Han spare tid dersom man har et datasett med mange variabler som slutter med delay. utelukker også dersom man glemmer ut en variabel
+    -   dersom man lurer på hva man kan bruke select til, spør i hjelp (i console ?select)
+
+## transmute
+
+-   Brukes når vi bare vil meholde de nye variablene
+
+```{r}
+my_data <- flights |>
+    transmute(
+    gain = dep_delay - arr_delay,
+    speed = (distance/air_time) * 60
+    ) |>
+  arrange(gain)
+head(my_data, n = 3)
+```
+
+-   vi kan komme til samme resultat ved å bruke mutate og så select
+
+```{r}
+alt_my_data <- flights |>
+  mutate(gain = dep_delay - arr_delay,
+    speed = (distance/air_time) * 60
+    ) |>
+  select(gain, speed) |>
+  arrange(gain)
+head(alt_my_data, n = 3)
 ```
