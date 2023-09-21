@@ -25,3 +25,7 @@ editor: visual
 ## Test for å lage grein i git
 
 -   her skal vi øve oss på å slå sammen en grein og en main
+
+## Andre forsøk på grein
+
+-   før en skifter over mellom grein og main, må man huske å commit-pull-push
