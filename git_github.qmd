@@ -53,3 +53,9 @@ editor: visual
 ## nedenfor her vil det bare være test for å lage nye greiner
 
 -   Lutterloh system
+
+### versjon 1
+
+```{r}
+plot(mtcars$hp, mtcars$mpg)
+```
