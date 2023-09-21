@@ -32,3 +32,20 @@ editor: visual
 
 -   før en skifter over mellom grein og main, må man huske å commit-pull-push
 
+## Merge main og en grein
+
+-   commit-pull-push både grein og main
+-   stå i main (alltid stå i det som skal være hoveddokumentet)
+-   gå i terminal
+-   skriv inn git merge ... (skriv inn navnet på greinen du vil merge)
+-   trykk enter
+-   rydd opp i en eventuell konflikt
+-   lagre
+-   commit-pull-push
+
+## Slette en grein
+
+-   gå i terminal
+-   skriv inn
+    -   git branch -d ... (navn på gren)
+-   enter
