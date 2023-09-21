@@ -25,3 +25,5 @@ editor: visual
 ## Test for å lage grein i git
 
 -   her skal vi øve oss på å slå sammen en grein og en main
+-   vi forsøker igjen med først å commit-pull-push main og testgrein.
+-   selv om jeg endrer ting i grenen, blir fortsatt main endret. Hvorfor?
