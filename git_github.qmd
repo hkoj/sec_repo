@@ -53,3 +53,7 @@ editor: visual
 ## nedenfor her vil det bare være test for å lage nye greiner
 
 -   Lutterloh system
+
+### inception
+
+-   i greinen inception har vil laget en grein i grein. vi står altså i greinen når vi oppretter en ny grein
