@@ -1,0 +1,27 @@
+---
+title: "Git_github"
+format: html
+editor: visual
+---
+
+## Intro
+
+-   merge: kan gjøre det fra terminal i rstudio eller med å bruke en git klient eller direkte i github.
+    -   vi skal bruke den fra terminal
+-   hvorfor bruke greiner?
+    -   dersom man gjør endringr i en grein, blir main forbli urørt. Dersom noe er gjort galt, kan en ta en grein ut for å forsøke å korrigere det der å se om det virker. Dersom det virker, kan vi da merge det med main igjen for å korrigere det i denne også
+    -   for oss er dette greit dersom man har en kaldd som man vil andre skal se gjennom å komme med kommentarer til. Dersom det er laget en grein kan vi fortsatsette med main mens man venter på kommentaren
+    -   også greit dersom man jobber flere sammen der man jobber med hvert vårt tema, kan vi jobbe i hver vår grein og når vi er fornøyd kan vi sy begge greinene inn i main. Da ungår man en merge konflikt når vi tar commit-pull-push
+
+## lage grein
+
+-   gå opp til høyre . Her vises hvor du er (main eller grein)
+-   trykk New Branch og legg til navn
+-   klikk create
+-   RStudio vil selv pushe dette opp til github
+-   nå kan du endre dokumentet som vanlig og lagre. Når du tar en commit-pull-push vil det gå automatisk over til grenen du ønsker uten at hoveddokumentet blir endret
+-   dersom du ønsker en ny grein til kan du gå over til main igjen og så gjøre samme prosess igjen.
+
+## Test for å lage grein i git
+
+-   her skal vi øve oss på å slå sammen en grein og en main
