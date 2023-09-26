@@ -69,4 +69,3 @@ plot(cars)
 ### inception
 
 -   i greinen inception har vil laget en grein i grein. vi står altså i greinen når vi oppretter en ny grein
-

@@ -1,0 +1,241 @@
+---
+title: "EDA"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| output: false
+#| message: false
+library(tidyverse)
+library(nycflights13)
+library(gridExtra)
+library(modelr)
+library(grid)
+library(ggplotify)
+library(vtable)
+```
+
+## Intro
+
+-   Dreier seg om å bli kjent me dataene sine
+    -   va er største og minste verdi
+    -   mangeldne verdier
+    -   variasjonen mellom variabler, sammenheng
+-   variabel: egenskap med underliggende fenomen som kan måles
+-   verdi: registrert tall som kommer av målingen av egenskapen
+-   observasjon: et sett av målinger av underliggende fenomen
+    -   dersom det er været måler lufttrykk, temperatur, mm regn, beskrivelse av været
+    -   underliggende fenomenet er været
+-   tabular data: liste av variabler, obeservasjon og verdi
+-   tidy data: hovedpremisset for data Science
+    -   en måte å organisere dataen på
+
+## Enkeltvariabler
+
+```{r}
+heights <- modelr::heights
+```
+
+-   Her bruker vi :: for da slipper vi å instalere hele pakken med datasette høyde/inntekt
+
+```{r}
+heights |>
+  select(income, height) |>
+  filter(income < 300000) |>
+  ggplot(mapping = aes(x = height, y = income)) +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+```{r}
+summary(heights)
+```
+
+### forelesning 22.09.2023
+
+```{r}
+# NAs in my_heights?
+heights |> 
+  apply(MARGIN = 2, FUN = is.na) |>
+  apply(MARGIN = 2, FUN = sum) 
+```
+
+-   apply: bruk en funksjon på variablene
+    -   is.na skal brukes på kolonne for kolonne
+    -   derretter skal det summeres
+
+```{r}
+# NAs in my_heights?
+heights |>
+  is.na() |>
+  apply(MARGIN = 2, FUN = sum) 
+```
+
+-   En enklere å mer ryddig måte å gjøre det samme på.
+
+```{r}
+# number of NAs in each variable
+# drop variables with no NA
+heights |>
+  is.na() |>
+  colSums() %>% 
+  .[. > 0]
+```
+
+-   colsums og rowsums: brukes til å summere rekker eller kolonner
+-   her har vi også sakt at vi bare skal printe ut verdien dersom det er NA verdier der
+    -   for at dette skal virke, må vi bruke den gamle type pipe %\>%
+
+-   EDA går ofte ut på å lage tabeller med karakeristene til dataene er
+
+```{r}
+# package vtable must be installed
+heights %>%
+  select(-marital, -sex) %>%
+  # . to stop RStudio complaining about no data
+  vtable::st(.)
+```
+
+```{r}
+# package vtable must be installed
+heights %>% 
+  select(marital, sex) %>% 
+  vtable::st(.)
+```
+
+```{r}
+heights %>% 
+  select(-marital) %>% 
+  vtable::st(group = 'sex')
+```
+
+-   i dette eksemplet over har vi gruppert det etter kjønn. I tabellen så ser vi verdiene to ganger.
+    -   her kan vi også kanskje begynne å se en sammenheng mellom høyde og inntekt. gjnnomsnitt så har menn høyere lønn enn kvinner, og de er også gjennomsnittelig høyere
+
+```{r}
+# package vtable must be installed
+heights %>% 
+  mutate(married = if_else(
+    marital == 'married', 
+    TRUE, 
+    FALSE)
+    ) %>% 
+  filter(sex == 'female') %>% 
+  select(-sex, -marital) %>% 
+  vtable::st(group = 'married')
+```
+
+-   Her har vi forenklet variabelen med sivilstatus
+    -   Vi har laget en ny variabel med mutate. I denne nye variabelen har vi sprt om svar ut i true eller false ut i fra variabelen marital, er det married som er registrert?
+    -   går fra fem kategorier til gift eller ikke gift
+-   etter den nye variabelen, har vi filtrert ut på bare kvinner, derretter har vi tatt vekk kjønn ettersom vi bare har kvinner med så er ikke denne variabelen interesant lenger
+-   derreter har vi grupert etter den nye variabelen vi har laget
+
+```{r}
+heights %>% 
+  mutate(married = if_else(
+    marital == 'married', 
+    TRUE, 
+    FALSE)
+    ) %>% 
+  filter(sex == 'male') %>% 
+  select(-sex, -marital) %>% 
+  vtable::st(group = 'married')
+```
+
+-   vi gjør det samme på mennene
+
+## bar charts
+
+```{r}
+ggplot(data = heights) +
+  geom_bar(mapping = aes(x = education), na.rm = TRUE)
+```
+
+-   her må vi huske at det finnes NA verdier på utdanning, derfor må vi ta med oss na.rm = true
+    -   det som er med ggplot så vil den automatisk slette de observasjonene som har NA verdi, men du vil få med en advarsel på toppen av grafen som sier at ggplot har slettet noen verdier. Denne advaselen vil komme med på selve dokumentet, derfor er det greit å ta med na.rm uansett slik at en ikke får med denne feilmeldingen på selve dokumentet
+-   dette er et amerikansk datasett. Derfor må vi tenke litt anderledes når vi tenker på antall år (12 år opp til og med High School)
+
+```{r}
+hist1 <- ggplotify::as.ggplot(~hist(heights$income, breaks = 20))
+hist2 <- ggplot(heights, mapping = aes(x = income)) +
+  geom_histogram(bins = 20)
+
+gridExtra::grid.arrange(hist1, hist2, ncol = 2)
+```
+
+-   brakes eller bin betyr kategorier som variabelene skal settes i
+-   dette er egentlig de samme histogramet laget på to ulike måter. Grunnen til at det ser litt ulikt ut er at de blir brukt litt ulike innhelinger av kategoriene
+    -   begge to gi et greit bilde av fordelingen, bare velg den ene å ikke bry deg så veldig
+
+```{r}
+hist1 <- ggplotify::as.ggplot(~hist(log(heights$income + 1), breaks = 20))
+hist2 <- ggplot(heights, mapping = aes(x = log(income + 1))) +
+  geom_histogram(bins = 20)
+
+gridExtra::grid.arrange(hist1, hist2, ncol = 2)
+```
+
+-   dersom man ønsker noe som er mer normalfordelt bruker vi log( )
+    -   Her ser vi og alle som har 0 i inntekt
+    -   Her har vi ln av inntekten som variabel, ikke inntekten i seg selv
+    -   vi legger til 1 på grunn av alle de som ikke har inntekt (ln til 0 er negativ uendelig)
+        -   ln til 1 = 0
+        -   ln til e = 1
+            -   jo nærmere vi kommer til 0 jo større tall blir det og når vi kommer til 0 er det uendelig
+
+```{r}
+hist3 <- ggplot(heights, mapping = aes(x = income)) +
+  geom_histogram(bins = 40, na.rm = TRUE)
+hist4 <- ggplot(heights, mapping = aes(x = height)) +
+  geom_histogram(bins = 40, na.rm = TRUE)
+hist5 <- ggplot(heights, mapping = aes(x = weight)) +
+  geom_histogram(bins = 40, na.rm = TRUE)
+gridExtra::grid.arrange(hist3, hist4, hist5, ncol = 1)
+```
+
+```{r}
+hist6 <- ggplot(heights, mapping = aes(x = age)) +
+  geom_histogram(bins = 40, na.rm = TRUE)
+hist7 <- ggplot(heights, mapping = aes(x = education)) +
+  geom_histogram(bins = 40, na.rm = TRUE)
+hist8 <- ggplot(heights, mapping = aes(x = afqt)) +
+  geom_histogram(bins = 40, na.rm = TRUE)
+gridExtra::grid.arrange(hist6, hist7, hist8, nrow = 1)
+```
+
+## dele opp en variabel
+
+```{r}
+heights %>% 
+  mutate(
+    edu_fac = cut(education, 
+                  breaks = c(0, 12, 14, 16, 21), 
+                  labels = c("NotHS", "NotTC", "NotC", "C+"),
+                  right = FALSE) 
+  ) %>% 
+  filter(
+    !is.na(
+      edu_fac) & income > 0
+    ) %>%
+  ggplot(
+    mapping = aes(
+      x = income, 
+      fill = edu_fac, 
+      colour = edu_fac)
+    ) +
+  geom_density(alpha = 0.2, na.rm = TRUE) + 
+  facet_wrap(~sex)
+```
+
+-   Her har vi delt opp utdanning i 4 kategorier
+    -   right = false betyr opp til, men ikke inklusivt
+    -   Ikke high school, ikke tekniskskole, ikke collage og ikke høyere
+
+```{r}
+#| echo: false
+# siste
+```
