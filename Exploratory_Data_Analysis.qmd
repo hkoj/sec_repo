@@ -210,6 +210,118 @@ gridExtra::grid.arrange(hist6, hist7, hist8, nrow = 1)
 ## dele opp en variabel
 
 ```{r}
+heights |>
+  mutate(
+    edu_fac = cut(education, 
+                  breaks = c(0, 12, 14, 16, 21), 
+                  labels = c("NotHS", "NotTC", "NotC", "C+"),
+                  right = FALSE) 
+  ) |>
+  filter(
+    !is.na(
+      edu_fac) & income > 0
+    ) |>
+  ggplot(
+    mapping = aes(
+      x = income, 
+      fill = edu_fac,
+# fill er fargen som er utfylt 
+      colour = edu_fac)
+# colour er selve fargen på streken
+    ) +
+  geom_density(alpha = 0.2, na.rm = TRUE) +
+# alpha betyr at kurvene skal være gjennomsiktige 
+  facet_wrap(~sex)
+# facet_wrap betyr at de skal deles opp på de variabelen som vi her har valgt skal være kjønn
+```
+
+-   Her har vi delt opp utdanning i 4 kategorier
+    -   right = false betyr opp til, men ikke inklusivt
+        -   tar ikke med verien som står til høyre
+    -   Ikke high school, ikke tekniskskole, ikke collage og ikke høyere
+
+```{r}
+heights %>% 
+  mutate(
+    edu_fac = cut(education, 
+                  breaks = c(0, 12, 14, 16, 21), 
+                  labels = c("NotHS", "NotTC", "NotC", "C+"),
+                  right = FALSE) 
+  ) %>% 
+  filter(!is.na(edu_fac) & income > 0) %>%
+  ggplot(mapping = aes(x = income, fill = sex, colour = sex)) +
+  geom_density(alpha = 0.2, na.rm = TRUE) + 
+  facet_wrap(~edu_fac)
+```
+
+```{r}
+# antall som har mindre enn 1 dollar fordelt på kvinner og menn og utdanning
+heights |>
+  mutate(
+    edu_fac = cut(education, 
+                  breaks = c(0, 12, 14, 16, 21), 
+                  labels = c("NotHS", "NotTC", "NotC", "C+"),
+                  right = FALSE) 
+  ) |>
+  filter(income < 1) |>
+  select(sex, edu_fac) |>
+  group_by(sex) |>
+  table()
+```
+
+## boxplot
+
+```{r}
+heights |> 
+  mutate(
+    edu_fac = cut(education, 
+                  breaks = c(0, 12, 14, 16, 21), 
+                  labels = c("NotHS", "NotTC", "NotC", "C+"),
+                  right = FALSE) 
+  ) |> 
+  filter(income > 0) |>
+  ggplot(mapping = aes(x = edu_fac, y = income)) +
+  facet_wrap(~sex) + 
+  geom_boxplot()
+```
+
+-   linjen som er inni selve boksen er medianen
+-   de punktene som er utover sen lange streken som stikker ut av boksen, er outliers
+
+## hvordan behandle dårlig data
+
+-   ekstremverdier, skal disse tas med?
+    -   kan utelate, men bør adressere disse og kanskje lage flere plot for ekstremverdiene
+    -   ekstremverdi eller tastefeil?
+        -   kan endre verdi til en NA verdi
+        -   bør ikke endre for mye på data, kan være aktuelt i
+            -   små datasett der hver observersjon er gull vært
+            -   kan gi en god dokumentasjon på hvorfor du endrer på dataen
+                -   eks noe som er over 100 %
+-   ggplot kan lage et plot selv om det er NA verdier
+    -   ggplot vil automatisk slette NA verdien før det bli laget et plot
+-   ekstremverdier kan det forklares eller mangler det et en variabel
+-   dersom resulatet blir det sammen når vi fjerner ekstremveriden, kan vi ta denne vekk
+    -   hvis ikke bør vi tenke over hypotesen og modellen
+
+## kovarians
+
+-   samvariasjon mellom variabler
+-   i ggplot kan vi bruke fasetter
+    -   bruke subsett av variablene
+-   kategorivariabel og kontuerigvariabel
+    -   eks kjønn og inntekts
+-   to kategorivariabel
+    -   kjønn og giftemål
+-   to kontiunelig variabel
+    -   høyde og inntekt
+
+### kategori og kontiunerligvariabel
+
+-   geom_freqpoly( )
+-   kan bruke linjer, farge...
+
+```{r}
 heights %>% 
   mutate(
     edu_fac = cut(education, 
@@ -218,22 +330,73 @@ heights %>%
                   right = FALSE) 
   ) %>% 
   filter(
-    !is.na(
-      edu_fac) & income > 0
-    ) %>%
-  ggplot(
+    income > 0 & !is.na(weight) & !is.na(afqt) & !is.na(
+      edu_fac)) %>%
+ggplot(
+  mapping = aes(
+    x = income, 
+    y = after_stat(density))) +
+  geom_freqpoly(
     mapping = aes(
-      x = income, 
-      fill = edu_fac, 
-      colour = edu_fac)
-    ) +
-  geom_density(alpha = 0.2, na.rm = TRUE) + 
-  facet_wrap(~sex)
+      colour = edu_fac), 
+    binwidth = 10000)
 ```
 
--   Her har vi delt opp utdanning i 4 kategorier
-    -   right = false betyr opp til, men ikke inklusivt
-    -   Ikke high school, ikke tekniskskole, ikke collage og ikke høyere
+### to kategorivariabler
+
+-   ikke lurt å tegne
+-   her er geom_pint eller geom_count greie å bruke
+
+```{r}
+heights %>% 
+  mutate(
+    edu_fac = cut(education, 
+                  breaks = c(0, 12, 14, 16, 21), 
+                  labels = c("NotHS", "NotTC", "NotC", "C+"),
+                  right = FALSE) 
+  ) %>% 
+  filter(income > 0 & !is.na(weight) & !is.na(afqt) & !is.na(edu_fac)) %>%
+  ggplot() +
+  geom_count(mapping = aes(x = marital, y = edu_fac))
+```
+
+### en kontuinerlig og en med mange kategori
+
+-   for eksempel lønn som kontuinerlig og års utdanning som kategori
+-   her er det brukt lite fargemettning får der det er ange observasjoner, vil det bli mørkt ettersom det er mange punkter som ligger oppå hverandre
+-   
+
+```{r}
+heights %>% 
+  filter(income > 0 & !is.na(weight) & !is.na(afqt) & !is.na(education)) %>%
+  ggplot() +
+  geom_point(mapping = aes(x = education, y = income), alpha = 0.05)
+```
+
+### to kontiunerlig 
+
+-   i dette eksemplet bruker vi et nytt datasett som heter diamonds som handler om diamanter (handler om karat og pris)
+-   på store datasett me to kontiunerlige dataer kan vi lage punktet veldig lite
+-   kan dele den ene variabelen i intervaller
+
+```{r}
+dim(diamonds)
+```
+
+```{r}
+diamonds %>% 
+  filter(carat < 2.5) |>
+  ggplot(mapping = aes(x = carat, y = price)) +
+  geom_point(size = 0.1, alpha = 0.05)
+```
+
+-   hvor maner er større enn 2,5 karat
+
+```{r}
+diamonds |> 
+  filter(carat >= 2.5) |>
+  nrow()
+```
 
 ```{r}
 #| echo: false
