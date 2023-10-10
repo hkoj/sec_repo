@@ -1,0 +1,74 @@
+---
+title: "Data_wrangling"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| output: false
+#| message: false
+library(tidyverse)
+```
+
+## Tibbles
+
+-   en variant av dataframe
+    -   prøver å ta bort de mest iriterende med dataframe
+-   dersom du lager noe av en tibble, er det alltid en tibble som kommer ut
+    -   unntaket for dette er dersom du bruker klassisk r sine funksjoner til å plukke ut, da kan det ende opp som en vektor
+    -   derfor er det anbetalt å bare bruke kode fra tidyvere til å blukke ut når vi skal bruke tibble
+-   Dersom man ønsker en dataframe som en tibble, kan vi bruke funksjonen as_tibble
+-   noen klassiske r funksjoner liker ikke tibble, og vi må da omforme tibblen til en dataframe
+    -   bruker funksjonen as.data.frame
+-   skal en plukke ut en variabel i en tibbel kan vi bruke \$ eller \[\[
+    -   \[\[ kan plukke ut både nummeret på variabelen og navnet (med hermetegnet på navnet)
+    -   \$ kan bare plukke ut navnet (uten hermetegn)
+    -   Dersom det blir brukt en gammel Pipe må det skrives et punktom før datane
+
+```{r}
+tib <- tibble(
+  x = 1:5,
+  y = seq(from = 2.5, by = 0.12, length.out = 5),
+  z = x + y^0.5,
+  # What does the next one do?
+  d = LETTERS[seq_along(y) + 10]
+)
+tib
+```
+
+-   et variabelnavn kan ikke starte med et tall
+    -   kan klare å omgå dette ved å bruke \`før og etter navnet
+    -   selv om vi kan få det til, er det ikke anbefalt da de for kan bli andre problemer
+
+```{r}
+mtcars_tib <- as_tibble(mtcars, rownames = "Modle")
+mtcars_tib
+```
+
+-   Når en bruker tibble, så dropper den det som står som rowname, dersom det skal brukes må vi bruke opsjonen rownames som vist over
+
+```{r}
+mtcars %>%
+  .$cyl %>% 
+  table()
+```
+
+-   legg merke til at ettersom det er brukt den gamle pipen, så må det et punktom før \$cyl
+
+```{r}
+#plukke ut på tidyverse måten
+mtcars |>
+  select(cyl) |>
+  table()
+```
+
+## Data import
+
+-   (reader) er tidyverse sin for å importere ting som har tekst
+
+```{r}
+#| echo: false
+# siste
+```
