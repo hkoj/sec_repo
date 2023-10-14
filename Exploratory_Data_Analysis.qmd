@@ -88,7 +88,6 @@ heights |>
 -   colsums og rowsums: brukes til å summere rekker eller kolonner
 -   her har vi også sakt at vi bare skal printe ut verdien dersom det er NA verdier der
     -   for at dette skal virke, må vi bruke den gamle type pipe %\>%
-
 -   EDA går ofte ut på å lage tabeller med karakeristene til dataene er
 
 ```{r}
@@ -373,7 +372,7 @@ heights %>%
   geom_point(mapping = aes(x = education, y = income), alpha = 0.05)
 ```
 
-### to kontiunerlig 
+### to kontiunerlig
 
 -   i dette eksemplet bruker vi et nytt datasett som heter diamonds som handler om diamanter (handler om karat og pris)
 -   på store datasett me to kontiunerlige dataer kan vi lage punktet veldig lite

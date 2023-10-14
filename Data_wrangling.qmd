@@ -68,6 +68,115 @@ mtcars |>
 
 -   (reader) er tidyverse sin for å importere ting som har tekst
 
+## Tidy data
+
+-   tidyverse laster 8 pakker for oss
+    -   [ggplot2](https://ggplot2.tidyverse.org/), for data visualisation.
+    -   [dplyr](https://dplyr.tidyverse.org/), for data manipulation: brukes for å manipulere data
+    -   [tidyr](https://tidyr.tidyverse.org/), for data tidying.
+    -   [readr](https://readr.tidyverse.org/), for data import: brukes på å få data inn i R
+    -   [purrr](https://purrr.tidyverse.org/), for functional programming:
+    -   [tibble](https://tibble.tidyverse.org/), for tibbles, a modern re-imagining of data frames:
+    -   [stringr](https://github.com/tidyverse/stringr), for strings: inneholder funksjoner for å manipulerer tekststrenger
+    -   [forcats](https://github.com/tidyverse/forcats), for factors: funksjoner som kan manipulere kategorivariabler
+-   Av og til må vi spesifisere hvilken pakke vi vil bruke funksjonen fra
+    -   dplyr::select
+-   tidy data har tre krav. er to krav oppfylt, vil det tredje automatisk vær oppfylt
+    -   Each variable must have its own column.
+    -   Each observation must have its own row.
+    -   Each value must have its own cell.
+-   for å kunne avgjøre hva som er tidy må vi ha for oss hva som er en observersjon
+    -   et sett med målinger med underliggende fenomen, på samme tidspunkt og samme objekt
+    -   dette gjelder for en rekke, ikke en kolonne
+    -   hver observersjon må ha sin rekke
+
+```{r}
+#hvordan rydde i et sett som ikke er tidy, må splitte colonnen rate
+tidy3 <- table3|>
+  separate(
+    col = rate,
+    # ettersom variabelen rate allerede eksisteret trenger vi ikke "" rundt navnet, med det må vi gjøre med de nye variablene ettersom dette er helt nye navn
+    into = c("cases", "pop"),
+    sep = "/"
+  )
+```
+
+```{r}
+tidy3
+```
+
+```{r}
+# i dette tilfellet er en observersjon på to ulike rekker. Vi må få dette på en 
+tidy2 <- table2 |>
+  pivot_wider(
+    names_from = type,
+    values_from = count
+  )
+```
+
+```{r}
+tidy2
+```
+
+```{r}
+# tabel 4 er dataen delt opp i to ulike tabeller året er også delt opp i to kolonner og står ikke på rekke
+#nå skal vi først ta årene og gjøre det om til en variabel Year
+tidy4a <- table4a |>
+  pivot_longer(
+    #for cols = kan vi enten bruke c('1999', '2000') der en bruker navnet på de kolonnene som vi skal snu på eller cols = -1 (alle kolonnene untatt den første) eller cols = -country (alle kolonnene med unntak av den med navnet country)
+    cols = c( '1999', '2000'),
+    names_to = "Year",
+    values_to = "cases"
+  )
+```
+
+```{r}
+tidy4a
+```
+
+```{r}
+#dersom vi ikke bruker tidyvers kan ikke variabelen begynne på et tall, vi endrer derfor navnet på variabelen 
+hk_table4b <- table4b |>
+  rename(
+    y1999 = '1999',
+    y2000 = '2000'
+  )
+```
+
+```{r}
+hk_table4b
+```
+
+```{r}
+tidy4b <- hk_table4b |>
+  pivot_longer(
+    cols = -country,
+    names_to = "year",
+    values_to = "pop", 
+    #nå skal vi fjerne y-en vi satte opp før året 
+    names_prefix = "y"
+  )
+```
+
+```{r}
+tidy4b
+```
+
+```{r}
+#nå skal vi sette sammen disse to til et datasett
+tidy4 <- left_join(tidy4a, tidy4b, join_by(country,Year == year)) |>
+  rename(year = Year)
+```
+
+```{r}
+tidy4
+```
+
+## oppgave innlevering
+
+-   sammenheng mellom inntekt og evnevivå
+-   sammenheng mellom ansiennitet og inntekt
+
 ```{r}
 #| echo: false
 # siste
