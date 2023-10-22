@@ -172,10 +172,160 @@ tidy4 <- left_join(tidy4a, tidy4b, join_by(country,Year == year)) |>
 tidy4
 ```
 
-## oppgave innlevering
+-   Separate
+    -   separerer toen kolonne til to
+-   Unite
+    -   ta to kolonner og lage det til en kolonne
 
--   sammenheng mellom inntekt og evnevivå
--   sammenheng mellom ansiennitet og inntekt
+```{r}
+#| paged.print: false
+table5_tidy <- table5 |>
+  unite(
+    col = year,
+    century, year,
+    sep = ""
+  ) |>
+  separate(
+    col = rate,
+    into = c("cases", "pop"),
+    sep = "/"
+  )
+table5_tidy
+```
+
+-   Det som er viktig for å kunne rydde i et datasett
+    -   pirot longer
+    -   pirot wider
+    -   unite
+    -   separate
+
+## Manglende verdier
+
+-   Explicitly: markert som NA ( i datasettet under står det markert med NA)
+
+-   Implicitly: dersom dataen mangler i sin helhet, observasjonene er ikke der for en gitt mnd for eksempel (i eksemplet under mangler 1. kvartal for 2016)
+
+    ```{r}
+    stocks <- tibble(
+      year   = c(2015, 2015, 2015, 
+                 2015, 2016, 2016, 2016),
+      qtr    = c(   1,    2,    3,    
+                    4,    2,    3,    4),
+      return = c(1.88, 0.59, 0.35,
+                 NA, 0.92, 0.17, 2.66)
+    )
+    stocks
+    ```
+
+-   Eksemplet under er samma datasett, men her ser vi at RStudio har automatisk satt inn en NA for manglende kvartal 2016
+
+```{r}
+stocks_wider <- stocks %>% 
+  pivot_wider(
+    names_from = year,
+    values_from = return
+    )
+stocks_wider
+```
+
+-   I eksemplet under har vi brukt funksjonen complete. Denne funksjonen ser mønster i datasettet vårt og fyller inn NA verdier på det som mangler
+    -   Vi må beskrive i ( ) hvilke verdier den skal fullføre.
+
+```{r}
+stocks %>% 
+  complete(year, qtr)
+```
+
+-   funksjonen fill ( )
+    -   I eksemplet under ser vi at vi mangler noen navn på personene. I 99% av tilfellene er det navnet til det som står over som også gjelder på NA verdien ( i dette tilfellet Derrick Withmore
+
+```{r}
+treatment <- tribble(
+  ~ person,           ~ treatment, ~response,
+  "Derrick Whitmore", 1,           7,
+  NA,                 2,           10,
+  NA,                 3,           9,
+  "Katherine Burke",  1,           4
+)
+treatment
+```
+
+-   Her har vi fylt inn navnet, dersom vi hadde brukt up i .direction så hadde de vært kathrine burke som hadde blitt brukt
+-   
+
+```{r}
+treatment %>% 
+  fill(person, .direction = c("down"))
+```
+
+## case: WHO
+
+```{r}
+who
+```
+
+-   Ettersom det er ut som at alder er satt sammen til aldersgrupper på kolonnene, er ikke dette et tidy datasett. Hvordan skal vi starte med å rydde opp i dette?
+    -   samle sammen de kolonnene som ikke er variabler, gjør om kolonnenavnene og gjør det om til en variabel
+
+```{r}
+who <- tidyr::who
+```
+
+```{r}
+who <- who |>
+  pivot_longer(
+    cols = -c(country:year), 
+    names_to = "categories",
+    values_to = "values"
+  )
+```
+
+```{r}
+# her kontrollerer vi hvor mange NA verdier vi har i kategorien values, false er NA verdier 
+table(is.na(who$values))
+```
+
+-   Først må vi lage nytt navn slik at alle i kolonnen categories har samme navnformat
+-   Nå begynne alle med new\_
+    -   vi kan nå ta vekk new\_ og bare beholde navnet som er etter
+-   nå skal vi splitte opp den kolonnen (categories) til kolonnen type og genderage
+-   nå skal vi splitte den nye kolonnen genderage
+-   vi spli
+
+```{r}
+who <- who |>
+  mutate(
+    categories = str_replace(categories, "newrel", "new_rel"),
+    categories = str_replace(categories, "new_", "")
+  ) |>
+  separate(
+    col = categories,
+    into = c("type", "genderage"),
+    sep = "_"
+  ) |>
+  separate(
+    col = genderage,
+    into = c("gender", "age"),
+    sep = 1
+  ) |>
+  mutate(
+    age = str_replace(age, "65", "6599")
+    ) |>
+  separate(
+    col = age,
+    into = c("ageStart", "ageEnd"),
+    sep = -2
+  )
+```
+
+```{r}
+tmp <- who |>
+  unite(
+    col = "age",
+    ageStart, ageEnd,
+    sep = "_"
+  )
+```
 
 ```{r}
 #| echo: false

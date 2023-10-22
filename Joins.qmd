@@ -1,0 +1,18 @@
+---
+title: "Joins"
+format: html
+editor: visual
+---
+
+```{r}
+#| setup
+library(tidyverse)
+library(nycflights13)
+```
+
+## Intro
+
+-   datasett som er spredd over flere filer. Bruker en nøkkel/entydig ID som brukes når vi skal knytte sammen disse filene
+    -   for eks. fødselsnummer
+-   noen kan ha samme nøkkel, men bruke ulike navn/formatering på disse som kan gjøre det vanskelig å bruke denne nøkkelen selv om det er det samme som brukes
+-   
