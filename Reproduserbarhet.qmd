@@ -14,21 +14,31 @@ editor: visual
 ## Intro
 
 -   Vitenskap er bygget på tillit, og en måte å få tillit er at resultatert er replikerbart
+
 -   Replikerbarhet:
+
     -   Kunne gjøre ting på nytt med nye data og få samme data som den første forskningen
+
 -   reproduserbarhet:
+
     -   kunne gjenta en undersøkelse med samme data og prosedyrer og få samme resultat
+
 -   Peng (forsker) mener at et minstekrav bør være reproduserbarhet (for at en artikkel skal kunne publiseres)
+
 -   varierende definisjoner opp gjennom.
+
     -   kom frem til i 2015 at robust og politelig vitenskap krever reproduserbart, replikerbart og generaliserbart
         -   reproduserbart kan gjør om igjen en studie med samme data og få samme resultat
         -   replikerbart kan gjenta undersøkelsen med nye data og få kvantitativ samme konklusjon
         -   generaliserbarhet kunne gjøre samme studie i en ny sammenheng, annen type data å få samme svar (utvide gruppen)
+
 -   reproduserbarhet delt opp i tre ulike begreper ( Goodman, Fanelli og Ioannidis 2016)
+
     -   går ikke dypere inn her, men greit å vite at dette eksisterer
+
 -   publiseringsskjeivhet
+
     -   sannsynlighet for at en studie skal bli produsert kommer av resultatet av den studien.
     -   få studier som blir publisert har en negativ konklusjon
         -   Dersom du har 100 studier med negativ konklusjon som alle blir forkastet, men en som er positiv og blir publisert, vil det vise skjevt resultat
     -   meta-analyse. Tar publisert studie fra et området og setter det sammen. Dersom det bare er de falsk positive som blir publisert, så vil også denne analysen bli feil
--   

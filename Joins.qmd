@@ -5,14 +5,102 @@ editor: visual
 ---
 
 ```{r}
-#| setup
+#|label: setup
+#|message: false
 library(tidyverse)
 library(nycflights13)
 ```
+
+agjest inviteri inn i repro
 
 ## Intro
 
 -   datasett som er spredd over flere filer. Bruker en nøkkel/entydig ID som brukes når vi skal knytte sammen disse filene
     -   for eks. fødselsnummer
 -   noen kan ha samme nøkkel, men bruke ulike navn/formatering på disse som kan gjøre det vanskelig å bruke denne nøkkelen selv om det er det samme som brukes
--   
+
+```{r}
+#| paged.print: false
+flights |>
+  select(year:day, carrier, everything()) |>
+  group_by(carrier) |> 
+  summarise(first(dep_time)) |>
+  head(, n= 3)
+```
+
+```{r}
+flights <- flights
+```
+
+```{r}
+flights |>
+  select(carrier, everything())
+```
+
+-   nå skal vi joine to datasett
+-   left_join
+    -   tar noe fra høyre og legger inn i venstre. I dette tilfellet fra datasett airlines og inn i flights
+
+```{r}
+tmp <- left_join(flights, airlines, join_by(carrier))
+tmp <- select(tmp, carrier, airline_name = name, everything())
+```
+
+-   vi gjør det samme bare i en pipe
+
+```{r}
+tmp <- flights |>
+  left_join(airlines, join_by(carrier)) |>
+  select(carrier, airline_name = name, everything())
+```
+
+-   under har vi et tilfelle der datasettene ikke har samme key (bytter om carrier til id for å få forskjell)
+
+```{r}
+airlines <- nycflights13::airlines |>
+  rename(id = carrier)
+```
+
+```{r}
+tmp <- flights |>
+  left_join(airlines, join_by(carrier == id)) |>
+  select(carrier, airline_name = name, everything())
+```
+
+```{r}
+airports <- airports
+```
+
+```{r}
+nyc_airports <- airports |>
+  filter(faa %in% c('JFK', 'LGA', 'EWR'))
+```
+
+```{r}
+flights |>
+  select(origin, everything())
+```
+
+```{r}
+airlines <- nycflights13::airlines
+```
+
+```{r}
+flights <- flights |>
+  left_join(airlines, join_by(carrier))|>
+  select(carrier, airline_name = name, everything())
+```
+
+-   under tar vi ut variabelnavnene i datasett flights og spør hvilke av disse navnene som også finnes i datasett planes
+    -   når en gjør dette må en være obs på at to datasett kan ha like navn, men at det har ulik betydning (year i disse datasettene betyr i flights året flygningen var, i planes betyr det hvilket år flyet ble produsert. I eksemplet under endrer vi derfor også navnet på det ene året)
+
+```{r}
+nf <- names(flights)
+nf[nf %in% names(planes)]
+```
+
+```{r}
+flights <- nycflights13::flights
+flights <- flights |>
+  left_join(select(planes, year_man = year, everything()), join_by(tailnum))
+```
