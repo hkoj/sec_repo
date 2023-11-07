@@ -6,12 +6,11 @@ editor: visual
 
 ```{r}
 #|label: setup
+#|eecho: false
 #|message: false
 library(tidyverse)
 library(nycflights13)
 ```
-
-agjest inviteri inn i repro
 
 ## Intro
 
@@ -29,7 +28,7 @@ flights |>
 ```
 
 ```{r}
-flights <- flights
+flights <- nycflights13::flights
 ```
 
 ```{r}
@@ -87,7 +86,7 @@ airlines <- nycflights13::airlines
 
 ```{r}
 flights <- flights |>
-  left_join(airlines, join_by(carrier))|>
+  left_join(airlines, join_by(carrier)) |>
   select(carrier, airline_name = name, everything())
 ```
 
@@ -103,4 +102,127 @@ nf[nf %in% names(planes)]
 flights <- nycflights13::flights
 flights <- flights |>
   left_join(select(planes, year_man = year, everything()), join_by(tailnum))
+```
+
+```{r}
+flights <- flights %>% 
+  left_join(planes, by = "tailnum", 
+            suffix = c("", "_plane"))
+
+flights %>% 
+  select(tailnum, model, 
+         year_plane, year, everything()) %>% 
+  head(n = 3)
+```
+
+-   nå skal vi joine med datasett origin og destination
+-   først skjekker vi navnene i datasettene, dette må vi hensynta når vi joiner
+
+```{r}
+nmf <- names(flights)
+nmf[nmf %in% names(airports)]
+```
+
+```{r}
+head(flights$name, n = 4)
+```
+
+```{r}
+head(airports$name, n = 4)
+```
+
+```{r}
+flights <- flights %>% 
+  left_join(airports, 
+            by = c("origin" = "faa"), 
+            suffix = c("_airline", "_origin_airport"), 
+            keep = TRUE
+            ) %>% 
+  select(year:day, name_airline, name_origin_airport, everything())
+head(flights, n = 3)
+```
+
+```{r}
+#work with tmp until correct then 
+#change to my_flights
+flights <- flights %>% 
+  left_join(airports, 
+            by = c("dest" = "faa"),
+            suffix = c("_origin", "_dest"),
+            keep = FALSE
+            ) %>% 
+  rename(name_dest_airport = name) %>% 
+  select(faa, origin, dest, lat_origin, lat_dest, everything())
+#View(my_flights[1:50,])
+```
+
+```{r}
+set.seed(666)
+(x <- sample(flights$dep_time, size = 30))
+```
+
+-   nå skal vi fikse tidspunktene slik at alle klokkeslett har fire tall
+
+```{r}
+x <- str_pad(
+  string = x,
+  width = 4,
+  side = "left",
+  pad = "0"
+)
+x
+```
+
+-   nå skal vi plukke ut timene
+
+```{r}
+str_sub(x, start = 1, end = 2)
+```
+
+```{r}
+fix_dep_time <- function(x) {
+  x = str_pad(x, width = 4, side = "left", pad = "0")
+  x = str_sub(x, start = 1, end = 2)
+  x = as.integer(x)
+  return(x)
+  } + 1
+```
+
+```{r}
+flights <- flights %>% 
+  mutate(
+    dep_time_hour = fix_dep_time(dep_time)
+  )
+```
+
+```{r}
+nmf <- names(flights)
+nmf[nmf %in% names(weather)]
+```
+
+```{r}
+flights <- flights %>% 
+  left_join(weather, 
+            by = c("origin", "year", "month", "day", "dep_time_hour" = "hour"),
+            suffix = c("", "_weather"), 
+            keep = FALSE
+            )
+```
+
+```{r}
+my_flights <- my_flights %>% 
+  select(year, month, day, dep_time, everything()) %>% 
+  print()
+```
+
+```{r}
+flights <- flights %>% 
+  select(year, month, day, dep_time, everything()) %>% 
+  print(width = 5)
+```
+
+```{r}
+#| paged.print = false
+flights |>
+  select(year:dep_time, temp:visib, everything())
 ```

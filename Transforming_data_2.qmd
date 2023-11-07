@@ -125,8 +125,7 @@ my_mtcars <- mtcars |>
 
     -   her vil vi ha kolonnene fra model til og med vs vi skriver derfor select(model:vs)
 
--   select har mange triks.
-    Man kan endre rekkefølgen på kolonnen
+-   select har mange triks. Man kan endre rekkefølgen på kolonnen
 
     -   kan skrive det på denne måten
 
@@ -136,13 +135,11 @@ my_mtcars <- mtcars |>
 
         select(model, wt, everything())
 
--   kan også endre variabelnavn ved hjelp av select.
-    dette kan en gjøre samtidig som en sortere variablene
+-   kan også endre variabelnavn ved hjelp av select. dette kan en gjøre samtidig som en sortere variablene
 
     select(model, vekt = wt, everything())
 
--   Det som skrives inne i en Pipe, vil ikke bli lagret som et datasett.
-    Dersom en ønsker å ta vare på Pipen og kanskje bruke oppsettet i andre chunker, må vi legge det inn i et nytt datasett på følgende måte helt i starten av chunken
+-   Det som skrives inne i en Pipe, vil ikke bli lagret som et datasett. Dersom en ønsker å ta vare på Pipen og kanskje bruke oppsettet i andre chunker, må vi legge det inn i et nytt datasett på følgende måte helt i starten av chunken
 
     my_mtcars \<- mtcars
 
@@ -329,15 +326,11 @@ print(
 
         -   Kan brukes dersom en for eksempel vil ha alle dagene med, med unntak for de som er oppramset
 
-    -   `|` is `or`, ex.
-        TRUE \| FALSE is TRUE
+    -   `|` is `or`, ex. TRUE \| FALSE is TRUE
 
         -   Eller. Logisk operatør, hvis enten venstresiden eller høyresiden eller begge to er true blir bruk av denne true. Hvis begge er false, blir svaret false
 
-    -   `&` is `and`, ex.
-        TRUE & FALSE is FALSE.
-        TRUE & TRUE is TRUE, !(
-        TRUE & FALSE) is TRUE
+    -   `&` is `and`, ex. TRUE & FALSE is FALSE. TRUE & TRUE is TRUE, !( TRUE & FALSE) is TRUE
 
         -   da skal begge være true for at svaret skal være true (tenk venndiagram, her er det bare delene som overlapper hverandre som vil komme ut)
 

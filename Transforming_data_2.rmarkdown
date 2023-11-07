@@ -1,0 +1,597 @@
+---
+title: "transformin_data_denne_virker"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| output: false
+#| message: false
+library(tidyverse)
+library(nycflights13)
+library(styler)
+```
+
+
+## Intro
+
+-   et av de mest essensielle temane vi skal ha i dette semesteret
+-   finn lenke til youtube video angående en guide for Rstudio. Denne lenken finner du i foilsettet fra forelesning (exploring data -\> kapitel 5)
+-   vil lære hvordan vi manipulerer data fra et datasett
+-   en liten ordliste finner også i foilsettet
+    -   `filter()`: (plukker ut rekker) plukker ut subsett. filtrerer hvilke opplysninger vi ønsker. Inne i ( ) skriver vi hva som må tilfredsstilles for at data skal bli med. Dersom en øsnker flere filter, er den beste måten å ha flere filter under hverandre ( flere filter komandoer)
+    -   `arrange()`: endrer rekkefølge på datapunktene. Endrer ikke noe annet. Bytter bare rekkefølge etter eget behov
+    -   `select()`: plukker ut variabler (kolonner vi er innteresert i) vi er interessert i
+    -   `mutate()`: brukes til å lage nye variabler
+        -   `transmute()` tar kun vare på den nye variabelen og kaster all de gamle dataene
+
+
+```{r}
+set.seed(1234)
+res_mean_rnorm_3dig <- paste("Result:", round(mean(rnorm(n = 10, mean = 0, sd = 1)), digits = 3), sep = "")
+res_mean_rnorm_3dig
+```
+
+
+-   `rename()`: endrer navn på en variabel
+
+<!-- -->
+
+-   `summarise()` and `group_by()`: Group_by grupperer variabler, summarise summerer det som er gjort av group_by (eks grupperer antall flygninger på dager, summarise teller opp hvor mange flygninger det var på disse dagene) (`max`, `min`, `mean`, `median`, `sd` etc.)
+-   The functions above are from the `dplyr` package which is part of the `tidyverse`.
+
+<!-- -->
+
+-   VI skal i dette kapittelet bruke mye datasettet nycflights13
+
+## Pipes
+
+-   tre ekvivalente måter å jobbe på
+    -   funskjon i funksjon i funksjon i funksjo...
+
+
+```{r}
+set.seed(1234)
+res_mean_rnorm_3dig <- paste("Result:", round(mean(rnorm(n = 10, mean = 0, sd = 1)), digits = 3), sep = "")
+res_mean_rnorm_3dig
+```
+
+
+-   midlertidlige variabler
+
+
+```{r}
+set.seed(1234)
+res_rnorm <- rnorm(n = 10, mean = 0, sd = 1)
+res_mean_rnorm <- mean(res_rnorm)
+res_mean_rnorm_3dig <- round(res_mean_rnorm, digits = 3)
+res_mean_rnorm_3dig_string <- paste("Result:", res_mean_rnorm_3dig, sep = "")
+# print result
+res_mean_rnorm_3dig_string
+```
+
+```{r}
+# cleanup
+rm(res_rnorm, res_mean_rnorm, res_mean_rnorm_3dig, res_mean_rnorm_3dig_string)
+```
+
+
+-   pipe
+
+
+```{r}
+set.seed(1234)
+res_mean_rnorm_3dig_string <- 
+  rnorm(n = 10, mean = 0, sd = 1) %>%
+  mean() %>%
+  round(digits = 3) %>% 
+  # The dot '.' is to show where the content of the pipe should be put
+  paste("Result:", .)
+res_mean_rnorm_3dig_string
+```
+
+```{r}
+#| paged.print: false
+mtcars
+```
+
+```{r}
+#| paged.print: false
+mtcars |> 
+  as_tibble(rownames = "model") |>
+  arrange(cyl, hp) |>
+  print(n = 20) 
+```
+
+
+-   fordel med en tibbel fremfor dataframe, er at den ikke spyr ut hele datasettet. Printer en dataframe, viser alle tallene
+-   en tibbel vil skrive øverst hvor mange rekker og kollonner helt oppe, den vil også vise hvor mange kolonner det er plass til og printe de ti første rekkene og skrive hvor mange rekker den ikke printer (en kan også skrive i funksjonen hvor dersom man ønsker flere rekker printer
+    -   dersom man ønsker å sortere i synkende rekkefølge bruker man desc( ) i funksjonen arrange = arrange(cyl, desc(hp))
+        -   kan også bruke - forran det som står inne i arrange. Dersom det en ønsker å sortere er tekst, må man bruke den ordentlig måten
+-   i chunken øverst viser hvordan man i en tibbel kan hvordan datasette kan sorteres etter antall cylinder og deretter hestekrefter
+-   \|\> er den nye r standaren for en Pipe
+    -   Pipe gjør at vi ikke trenger å lage midlertidige variabler. Dette ordner Pipen selv og seltter også i mellomtiden det som ikke trengs lenger
+    -   dersom en har behov for å lagre dataen i mellomtiden må en bruke tegnsettingen %\>% før og data = . etter det en ønsker å lagre
+-   tibbelen vil automatisk ikke ta med radnavnet, dersom en ønsker dette må en inni argumentet as.tibbel skrive rownames og hvilket navn du ønsker på kolonnen
+
+
+```{r}
+data.frame(x = rnorm(2000), y = rnorm(2000, 2, 4))
+```
+
+```{r}
+#| paged.print: false
+my_mtcars <- mtcars |> 
+  as_tibble(rownames = "model") |>
+  select(model:wt) |>
+  select(model, vekt = wt, everything()) |>
+  arrange(cyl, desc(hp)) |>
+  print(n = 20) 
+```
+
+
+-   vi ser fra skjemaet over at tibbelen fikk litt for mange kolonner, vi kan begrense kolonnene med å bruke funksjonen selekt( )
+
+    -   her vil vi ha kolonnene fra model til og med vs vi skriver derfor select(model:vs)
+
+-   select har mange triks. Man kan endre rekkefølgen på kolonnen
+
+    -   kan skrive det på denne måten
+
+        select(model, wt, mpg:drat, qsec:vs)
+
+    -   eller på denne måten
+
+        select(model, wt, everything())
+
+-   kan også endre variabelnavn ved hjelp av select. dette kan en gjøre samtidig som en sortere variablene
+
+    select(model, vekt = wt, everything())
+
+-   Det som skrives inne i en Pipe, vil ikke bli lagret som et datasett. Dersom en ønsker å ta vare på Pipen og kanskje bruke oppsettet i andre chunker, må vi legge det inn i et nytt datasett på følgende måte helt i starten av chunken
+
+    my_mtcars \<- mtcars
+
+
+```{r}
+my_mtcars
+```
+
+
+## Velge ut et subset av et datasett
+
+
+```{r}
+my_mtcars |>
+  filter(cyl == 6) |>
+  select(model) |>
+  arrange(model) |>
+  pull()
+```
+
+
+-   for å teste for likhet må du bruke to =
+    -   når eg bruker denne plukker de bare de bilene som har 6 cylindre
+-   av de som har 6 cylindre velger vi bare å vise model
+-   En tibbel vil alltid gi en ny tibbel, men vi vil ha en vektor. vi bruker derfor funksjonen pull( )
+    -   dersom en har to variabel og bruker pull, vil de bare komme med den ene variabelen som svar.
+
+
+```{r}
+my_mtcars |>
+  group_by(cyl) |>
+  summarise(max_hp = max(hp))
+```
+
+
+-   vi vil nå finne ut hvilken bil i hver gruppe Cylinder (4, 6, 8) som har mest hestekrefter
+    -   først grupperer vi sammen like cylindere og så finne et sammedrag av hver gruppe
+
+
+```{r}
+my_mtcars |>
+  group_by(cyl) |>
+  summarise(sum_hp = sum(hp))
+```
+
+
+-   Her har vi funnet samlet sum av hestekreftene i angitt gruppe
+
+
+```{r}
+my_mtcars |>
+  group_by(cyl) |>
+  summarise(mean_hp = round(mean(hp), digits = 1))
+```
+
+
+-   Her har vi funnet gjennomsnittet av hestekreftene i hver gruppe
+    -   vi har også rundet av og lagt til bare et desimaltall
+
+
+```{r}
+my_mtcars |>
+  group_by(cyl) |>
+  summarise(mean_disp = round(mean(disp), digits = 1))
+```
+
+
+-   Her er det funnet gjennomsnitlig (mean) av cylindervolum (disp)
+
+## lage nye variabler
+
+-   dette gjørs med funksjonen mutate
+
+
+```{r}
+my_mtcars <- my_mtcars |>
+  mutate(
+    hp_vs_disp = hp/disp
+  )
+```
+
+
+-   først legger vi til nytt navn (hestekrefter vs cylindervolum)
+    -   navnet på den nye kolonnen til høyre for =
+    -   til venstre for = skal det stå hvordan vil vil regne det ut
+
+
+```{r}
+my_mtcars |>
+  group_by(cyl) |>
+  summarise(mean_vs = round(mean(hp_vs_disp), digits = 3))
+```
+
+
+-   Her har vi tatt gjennomsnittet på hvordan
+
+### Forelesning 19.09.2023
+
+-   Pakker som trengs: tidyverse, nycflights13
+-   vi skal gå litt videre å se på datasettet, trenger pakken nycflights13
+    -   fem ulike datasett, hoved datasettet er flights
+-   vi starter med å se på flights datasettet
+    -   gå inn på hjelp for å finne beskrivelse av datasettet
+        -   i data for avgang og ankomst er det vikrig å få med seg at formatet er HHMM eller HMM
+        -   carrier betyr flyselskap (forkortelse)
+
+
+```{r}
+flights <- flights
+```
+
+
+-   legger vi inn datasettet inn i en variabel, kan vi lett se en liten oversikt i enviroment. Vi kan også se hva som ligger inne i hver kolonne
+-   i ettertid kan vi avgrense hvilke variabler vi vil ha med for å se om vi finner en sammenheng mellom vær og forsinkelser eller om det er sesongbasert
+
+
+```{r}
+dim(flights)
+```
+
+
+-   når vi bruker dim( ) kan vi se hvor stort datasettet er. Antatt rekker og kolonner
+-   det som kommer ut av dim er heltallsvektor. det første er rekker og det andre er kolonner
+
+
+```{r}
+class(flights)
+```
+
+
+-   dersom vi lurer på om flights er en dataframe eller tibbel eller noe annet, kan vi bruke funsjonen class( )
+-   dette er en dataframe med utvidet funksjonalitet av en tibbel
+
+
+```{r}
+#| paged.print: false
+flights |>
+  head(n = 10)
+```
+
+
+-   det en ofte starter med når en skal se på et nytt dataframe, er å se på head og tail
+-   Her har vi brukt head og overstyrer defult med å si vi ønsker 10 linjer. Vi har også satt en #\| for vi ønsker at det ikke skal komme ut i en tibbel
+
+
+```{r}
+#| paged.print: false
+flights |>
+  arrange(desc(month), desc(day))
+```
+
+
+-   når vi forsøkte å bruke tail funksjonen, fikk vi 30. september. Derfor har vi sortert data først i måned og så dag.
+
+
+```{r}
+flights <- flights |>
+  arrange(month, day, desc(dep_time))
+```
+
+```{r}
+#| paged.print: false
+flights |>
+  tail()
+```
+
+
+-   grunnet at flygningene ikke er ordnet etter dato på originalt, har vi laget en kopi av dataframen for å kunne sortere det slik vi vil
+
+
+```{r}
+#| paged.print: false
+flights |>
+  filter(month == 1, day == 1) |>
+  print(
+    n = 5, 
+    width = 70
+    )
+```
+
+
+-   Dersom vi ønsker å konsentrere oss om noen få dager, bruker vi filter.
+-   i dette eksemplet vil vi ha for 1. januar
+    -   vi vil ha 5 rekker og en vidde på 70 tegn
+    -   vi ser at 1. januar er det 842 flygninger, vi ser også et det er 12 variabler som ikke vises
+
+
+```{r}
+summary(flights)
+```
+
+
+-   Vi kan også få en oversikt over en dataframe ved å bruke funksjonen summary( )
+
+
+```{r}
+print(
+  filter(flights, month == 1, day %in% c(1, 15, 30)),
+  n = 5,
+  width = 70
+  )
+```
+
+
+-   Dersom vi ønsker for flere dager, %in% sier at dersom verdien for dag er i den listen som kommer etter, så skal det bli tatt med i filteret
+
+-   Operatører
+
+    -   `==` NB! *not* `=`; equal
+
+    <!-- -->
+
+    -   `<, >, >=, <=,`
+
+        -   Mindre enn, større enn, større enn eller lik, mindre enn eller lik
+
+    -   `!` for negate, `!near(1/5 * 5, 5/5)` is FALSE.
+
+        -   Kan brukes dersom en for eksempel vil ha alle dagene med, med unntak for de som er oppramset
+
+    -   `|` is `or`, ex. TRUE \| FALSE is TRUE
+
+        -   Eller. Logisk operatør, hvis enten venstresiden eller høyresiden eller begge to er true blir bruk av denne true. Hvis begge er false, blir svaret false
+
+    -   `&` is `and`, ex. TRUE & FALSE is FALSE. TRUE & TRUE is TRUE, !( TRUE & FALSE) is TRUE
+
+        -   da skal begge være true for at svaret skal være true (tenk venndiagram, her er det bare delene som overlapper hverandre som vil komme ut)
+
+    -   `%in%` is very handy, x %in% c(1, 3), TRUE if x is 1 or 3
+
+## øvelser med filter
+
+-   finn antall flygninger som var i april og september
+
+
+```{r}
+flights |>
+  filter(month %in% c(4, 9)) |>
+  nrow()
+```
+
+
+-   tell opp antall flygninger i hver mnd
+
+
+```{r}
+#| paged.print: false
+flights |>
+  group_by(month) |>
+  summarise(antall_flyvninger = n())
+```
+
+
+-   hvor mange flyvninger var det per dag i januar
+    -   husk å alltid start å filtrere/grupere fra størst til minst
+
+
+```{r}
+#| paged.print: false
+flights |>
+  filter(month == 1) |>
+  group_by(day) |>
+  count() |>
+  print(n = 31)
+```
+
+
+-   finn dagen i januar med flest flygninger
+
+
+```{r}
+#| paged.print: false
+flights |>
+  filter(month == 1) |>
+  group_by(day) |>
+  count() |>
+  arrange(desc(n)) |>
+  print(n = 1)
+```
+
+
+-   i 2013 hvor mange flyvninger var det totalt på de to første dagene i månedene
+
+
+```{r}
+flights |>
+  group_by(day) |>
+  filter(day %in% c(1,2)) |>
+  nrow()
+```
+
+
+-   i 2013 hvor mange flyvinger hadde en annkomst forsinkelse mer enn eller lik 15 min og mindre enn 30 min
+
+
+```{r}
+flights |>
+  filter(arr_delay >= 15 & arr_delay < 30) |>
+  select(arr_delay) |>
+  nrow()
+```
+
+
+-   Dersom en observersjon er NA (ukjent) vil resultatet som regel bli NA
+    -   dersom en for eksempel skal rekne ut gjennomsnitt
+-   for å skjekke om det er noe NA i datasettet kan en bruke fujon is.na( ) dersom det er NA verdier vil dette bli true
+    -   Husk at true blir gjort om til 1 og false til til 0. vi kan derfor summere is.na( ) for å finne hvor mange NA vi har i datasettet på den enkelte variabelen
+
+
+```{r}
+sum(is.na(flights$arr_delay))
+```
+
+
+## select
+
+-   her kan vi velge ut hvilke variabler vi vil ha med oss videre
+-   kjekk å bruke i store datasett med mange variabler, kan velge vekk hvilke variabler vi ikke vil ha med oss videre
+
+
+```{r}
+# dropper variabelen year
+flights <- flights |>
+  select(-year)
+```
+
+
+-   Dersom vi skal ha med alle variablene, men endre rekkefølge, kan en gjøre det på følgende måte. For at vi ikke skal måtte sitte helt på slutten å ramse opp de resterende variablene, kan vi bruke funksjonen everything( )
+
+
+```{r}
+flights <- flights |>
+  select(month, day, carrier, tailnum, everything())
+```
+
+
+-   vi kan endre navn på en variabel inne i select komandoen
+
+
+```{r}
+# vi henter inn nycflights på ny for å starte uten de endringene vi har gjort
+flights <- nycflights13::flights
+```
+
+```{r}
+flights <- flights |>
+  select(-year) |>
+  select(month, 
+         day, 
+         flyselskap = carrier, 
+         halenummer = tailnum, 
+         everything()
+         ) |>
+  #setter tilbake til engelsk navn ved hjelp av rename(), setter det gamle navnet til venstre for = og det gamle til høyre
+  rename(
+    carrier = flyselskap,
+    tailnum = halenummer
+  ) 
+```
+
+
+-   hvordan finner vi median arr_delay for mai
+
+
+```{r}
+arr_delay_may <- flights |>
+  select(day, month, arr_delay) |>
+  filter(month == 5) |>
+  select(-month) |>
+  print()
+```
+
+
+-   gjennomsnitt ankomstforsinkelse de ulike dagene i mai
+
+
+```{r}
+#| paged.print: false
+arr_delay_may |>
+  group_by(day) |>
+  summarise(
+    gjennomsnittlig_f = round(
+      mean(
+      arr_delay, na.rm = TRUE), 
+      digits = 2),
+    median_f = median(arr_delay, na.rm = TRUE),
+    min_f = min(arr_delay, na.rm = TRUE),
+    max_f = max(arr_delay, na.rm = TRUE),
+    total_f = sum(arr_delay, na.rm = TRUE)) |>
+  print(n = 31)
+```
+
+
+-   de to hovedtingene vi trenger til å jobbe i R er filter( ) og select( )
+
+## Mutate, lage nye verdier/variabler
+
+
+```{r}
+my_new_data <- flights |>
+  select(month:day, ends_with("delay"), distance, air_time) |>
+  mutate(
+    gain = dep_delay - arr_delay,
+    speed = (distance/air_time) * 60
+    ) |>
+  select(month:day, gain, everything()) |>
+  arrange(gain)
+head(my_new_data, n = 5) 
+```
+
+
+-   ends_with( ) velger i ut variabler som endre med spesifik tekst
+    -   i dette tilfellet er det dep_delay og arr_delay. Han spare tid dersom man har et datasett med mange variabler som slutter med delay. utelukker også dersom man glemmer ut en variabel
+    -   dersom man lurer på hva man kan bruke select til, spør i hjelp (i console ?select)
+
+## transmute
+
+-   Brukes når vi bare vil meholde de nye variablene
+
+
+```{r}
+my_data <- flights |>
+    transmute(
+    gain = dep_delay - arr_delay,
+    speed = (distance/air_time) * 60
+    ) |>
+  arrange(gain)
+head(my_data, n = 3)
+```
+
+
+-   vi kan komme til samme resultat ved å bruke mutate og så select
+
+
+```{r}
+alt_my_data <- flights |>
+  mutate(gain = dep_delay - arr_delay,
+    speed = (distance/air_time) * 60
+    ) |>
+  select(gain, speed) |>
+  arrange(gain)
+head(alt_my_data, n = 3)
+```
+
