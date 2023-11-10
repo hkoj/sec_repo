@@ -1,0 +1,230 @@
+---
+title: "String"
+format: html
+editor: visual
+---
+
+```{r}
+#|label: setup
+#|eecho: false
+#|message: false
+library(tidyverse)
+library(readtext)
+```
+
+# strenger
+
+## Intro strenger
+
+-   gjelder tekst
+
+-   setter det i " "
+
+    -   enten enkle eller dobble
+    -   streng inni en streng da må det brukes begge to. Dobble ytterst og enkle innerst
+    -   skal det være en linjeskift inni strengen må det brukes \\ der en ønsker linjeskiftet
+
+-   strinerpakke (de mest nyttige)
+
+    -   str_length(): lengen på en streng, hvor mange karakterer
+    -   str_pad(): legger til for eksempel tall for å få en tallrekke til å bli like lang, tenk kommunenummer. kan både legge inn fra høyre og fra venstre
+
+    ```{r}
+    x <- c(321, 12111, 1978)
+    str_pad(x, width = 7, side = "left", pad = "0")
+    ```
+
+    -   str_replace(): bytte ut en vektor med noe annet, tenk søk og erstatt i word. Denne funksjonen tar bare å bytte ut det første den finner. Skal du bytte ut alle, må en bruke funksjonen str_replace_all
+
+    ```{r}
+    y <- str_replace(x, pattern = "1", replacement = "9");y
+    ```
+
+    -   str_extract(): henter ut det en måtte ønske,
+
+    ```{r}
+    str_extract(y, pattern = "9")
+    ```
+
+    -   str_extract_all(): samme som den over, men her vil den trekker ut begge 9-tallene i det siste tallet
+    -   str_match(): printer først hele strengen, så første gruppe, så andre gruppe og til sist den som havner i den siste gruppen
+    -   str_c(); combine strings into one string (inni funksjonen: collaps: " ", det som står inni " "er det som skal skille de du setter sammen for eks. ingen ting eller \_)
+    -   str_match_all():
+
+    ```{=html}
+    <!-- -->
+    ```
+    -   str_sub(): plukker ut en bit av en tekststreng. kan også gå fra høyre til venstre, då må det brukes - forran verdiene i stringen
+
+    -   str_to_lower(): dersom du har storebokstaver, går det de om til små bokstaver
+
+    -   str_to_upper(): noe me små bokstaver konverterets til store bokstaver
+
+    -   str_to_title(): endrer det til at det blir stor bokstav i begynnelsen på hvert ord. (engelsk overskrifter)
+
+## regular expressions
+
+-   funksjonen str_view kan være greit for å kontrollere at du får de treffene en ønsker
+
+```{r}
+x <- c("apple", "banana", "pear")
+str_view(x, "an")
+```
+
+-   punktom er viktig. Det betyr alt med unntak av linjeskift
+    -   i eksemplet under sier vi det skal være noen forran og noe bak a, ettersom det er ingenting forran a i apple vil ikke denne vise
+
+```{r}
+# . matches everything except newline
+str_view(x, ".a.") # Why not apple?
+```
+
+-   dersom vi faktsik trenger et . inni, må vi bruke \\\\ forran .
+
+```{r}
+x <- c("ap\\ple", "bana.na", "pe.ar")
+# explicit .
+str_view(x, "a\\.")
+```
+
+-   dersom man skal søke etter en slash i teksten, må vi gjøre det på samme måte som . altså \\\\\\\\
+
+```{r}
+# explicit \
+str_view(x, "\\\\")
+```
+
+-   anker:
+
+    -   \^ betyr i starten av linjen
+    -   \$ betyr slutten av linjen
+
+-   karakter klasser
+
+    -   `\d`: macher alle tall
+        -   husk å bruke \\\\
+
+    ```{=html}
+    <!-- -->
+    ```
+    -   `\s`: vanlig mellomrom eller tab
+
+        -   husk å bruke \\\\
+
+    -   `\S`: macher det samme med unntak av linjeskift
+
+        -   husk å bruke \\\\
+
+    -   `[abc]`: klammene sier hva vi vil matche. dersom vi hiver på \* bak \] betyr det at det skal være null eller flere, hvis en bruker + betyr det 1 eller flere
+
+    -   `[^abc]`: Her skifter \^ betydning. her macher det alt utenom a,b
+
+```{r}
+x <- c("apple pie", "apple tart", "apple cake")
+str_view(x, "\\s[cp]")
+```
+
+-   ?: 0 eller 1
+-   +: 1 eller flere
+-   \*: 0 eller flere
+-   Handy tool: `devtools::install_github("gadenbuie/regexplain")`
+
+## Nummer å matche
+
+-   {n}: exactly n
+
+```{=html}
+<!-- -->
+```
+-   {n,}: n or more
+
+-   {,m}: at most m
+
+-   {n,m}: between n and m
+
+## grupper å matche 
+
+-   ) extracts part of a match
+
+-   It\'s possible to have multiple groups
+
+-   recall the groups by `\\1`, `\\2` etc.
+
+-   `str_match_all()` will report the different matched groups
+
+# factors
+
+## intro
+
+-   har du en faktorvariabel, vil R automatisk sette det til 0 og 1, dette vil ikke tidyvers gjøre!
+-   her vil vi gjøre det om til en faktorvariabel, ettersom det er noe feilstavet i x, blir de generert en NA verdi. Anbefaler derfor ikke å bruke denne funksjonen
+
+```{r}
+x <- c("cat", "dog", "dog", "cow", "cat", "coow")
+# base factor()
+x_bf <- factor(x, levels = c("cat", "dog", "cow"))
+x_bf
+```
+
+-   i denne funksjonen får vi en advarsel
+
+```{r}
+# STRICTER; gives warning readr::parse_factor
+x_rf <- parse_factor(x, levels = c("cat", "dog", "cow"))
+x_rf
+```
+
+-   i denne får vi advarsel og den nekter å printe
+
+```{r}
+# STRICT; gives ERROR
+x_ff <- fct(x, levels = c("cat", "dog", "cow"))
+```
+
+## faktor i tidyverse
+
+-   forcats vil kunne endre rekkefølgen på variabelen, kun kosmetisk vil ikke endre på resultatet
+
+```{r}
+gss_cat <- forcats::gss_cat
+gss_cat |> head(n = 5) |> print(width = 75)
+```
+
+-   vi tar et lite mellomsteg og gjør om partyit til character vektor (bare for å vise hvirdan vi går til faktor vektor)
+
+```{r}
+gss_cat <- gss_cat |>
+  mutate(
+    partyid = as.character(partyid)
+  )
+```
+
+-   vi gjør partyid til en faktro
+
+```{r}
+gss_cat <- gss_cat |> 
+  mutate(
+    partyid_fac = fct(partyid)
+  )
+```
+
+-   vi ser hvor mange kategorier det finnes i faktoren
+
+```{r}
+levels(gss_cat$partyid_fac)
+```
+
+-   vi syntes det var litt mange, derfor beholder vi bare noen variabler og tar de resterene inn i ny kategori og lager en ny faktorvariabel "other". vi gjør dette ved hjelp av mutate og lager en ny kollonne
+
+```{r}
+gss_cat <- gss_cat |> 
+  mutate(
+    party = fct_collapse(
+      .f = partyid_fac,
+      "Strong rep" = "Strong republican",
+      "Strong dem" = "Strong democrat",
+      "Ind" = c("Independent", "Ind,near dem", "Ind,near rep"),
+      other_level = "Other"
+    )
+  )
+```
