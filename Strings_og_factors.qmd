@@ -6,10 +6,11 @@ editor: visual
 
 ```{r}
 #|label: setup
-#|eecho: false
+#|echo: false
 #|message: false
 library(tidyverse)
 library(readtext)
+library(lubridate)
 ```
 
 # strenger
@@ -48,12 +49,11 @@ library(readtext)
 
     -   str_extract_all(): samme som den over, men her vil den trekker ut begge 9-tallene i det siste tallet
     -   str_match(): printer først hele strengen, så første gruppe, så andre gruppe og til sist den som havner i den siste gruppen
-    -   str_c(); combine strings into one string (inni funksjonen: collaps: " ", det som står inni " "er det som skal skille de du setter sammen for eks. ingen ting eller \_)
+    -   str_c(); combine strings into one string (inni funksjonen: collaps: " ", det som står inni" "er det som skal skille de du setter sammen for eks. ingen ting eller \_)
     -   str_match_all():
 
-    ```{=html}
     <!-- -->
-    ```
+
     -   str_sub(): plukker ut en bit av en tekststreng. kan også gå fra høyre til venstre, då må det brukes - forran verdiene i stringen
 
     -   str_to_lower(): dersom du har storebokstaver, går det de om til små bokstaver
@@ -104,9 +104,8 @@ str_view(x, "\\\\")
     -   `\d`: macher alle tall
         -   husk å bruke \\\\
 
-    ```{=html}
     <!-- -->
-    ```
+
     -   `\s`: vanlig mellomrom eller tab
 
         -   husk å bruke \\\\
@@ -133,20 +132,19 @@ str_view(x, "\\s[cp]")
 
 -   {n}: exactly n
 
-```{=html}
 <!-- -->
-```
+
 -   {n,}: n or more
 
 -   {,m}: at most m
 
 -   {n,m}: between n and m
 
-## grupper å matche 
+## grupper å matche
 
 -   ) extracts part of a match
 
--   It\'s possible to have multiple groups
+-   It's possible to have multiple groups
 
 -   recall the groups by `\\1`, `\\2` etc.
 
@@ -214,6 +212,10 @@ gss_cat <- gss_cat |>
 levels(gss_cat$partyid_fac)
 ```
 
+```{r}
+levels(gss_cat$partyid_fac)
+```
+
 -   vi syntes det var litt mange, derfor beholder vi bare noen variabler og tar de resterene inn i ny kategori og lager en ny faktorvariabel "other". vi gjør dette ved hjelp av mutate og lager en ny kollonne
 
 ```{r}
@@ -227,4 +229,91 @@ gss_cat <- gss_cat |>
       other_level = "Other"
     )
   )
+print(gss_cat)
 ```
+
+## forelesning 14.11
+
+# Dato og tid
+
+-   tid kan bli veldig kompleks
+    -   mye grunnet forskjellig tidssone
+-   lubridate er en pakke som er veldig nytting innenfor dato og tid
+
+```{r}
+# nine eleven
+us_date <- "9-11-2001"
+no_date <- "11/9/2001"
+typeof(us_date)
+typeof(no_date)
+```
+
+-   hvordan kan vi gjøre en tekststreng om til en dato?
+
+```{r}
+us_d <- mdy(us_date) # note mdy
+typeof(us_d)
+class(us_d)
+```
+
+```{r}
+no_d <- dmy(no_date) #note dmy
+typeof(no_d)
+class(no_d)
+```
+
+-   R setter tall på datoer, der 01.01.1970 er dag 0 i år 0 (dersom en printer ut as.numeric 01.01.1971 vil svaret ut bli 365)
+-   forselen med at tid og dato blir gjort om til tall, er at en enkelt kan regne ut antall timer og dager mellom to hendelser
+
+```{r}
+month(us_d, label = TRUE, abbr = FALSE)
+#abbr er forkortet versjon
+```
+
+```{r}
+# her har vi sakt at vi vil ha ut månedene på norsk
+# Get code for locale with command 
+# locale -a 
+# in Terminal
+month(no_d, label = TRUE, abbr = FALSE, locale = "no_NO")
+```
+
+-   tid
+
+```{r}
+us_date_time <- 09112001202020
+no_date_time <- "11/9/2001 20:20:20"
+mdy_hms(us_date_time)
+dmy_hms(no_date_time)
+```
+
+-   NB! legg her merke til brukt funksjon på både den amerikanske og norske. den amerikanske er mdy for month, day, year men på norsk er det dmy for day, month, year
+
+-   tidssonen det blir printet ut i er ikke en egentlig tidssone, men er det samme som GMT som England bruker. UTC tar ikke hensyn til sommertid og leap seconds
+
+-   Hvordan gjøre om tall til dato i en tibbel
+
+```{r}
+set.seed(1234)
+my_dates <- tibble(
+  y = 1999:2008,
+  m = sample(1:12, size = 10, replace = TRUE),
+  # make it simple, seed 1234 gives no impossible date
+  d = sample(1:31, size = 10, replace = TRUE)
+)
+my_dates
+```
+
+```{r}
+my_dates <- my_dates %>% 
+  mutate(
+    date = make_date(year = y, month = m, day = d),
+    # order do not matter
+    rev_date = make_date(day = d,  month = m, year = y),
+    rev_date2 = format(date, "%d-%m-%y") # now <chr> not date
+    )
+my_dates
+```
+
+-   hvordan rydde opp i ggplot med alt for mange tall i x aksen
+    -   ta variabelen kan en ta mutate i en pape og omgjøre året til en dato (må da legge til måned og dato i tillegg

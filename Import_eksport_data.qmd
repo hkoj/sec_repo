@@ -33,8 +33,7 @@ arbeidsledig_rogaland99_02 <- read_excel("arbeidsledig_rogaland99_02.xlsx",
     skip = 2)
 ```
 
--   Rstudio vil at et variabelnavn skal starte med en bokstav.
-    Vi skal senere se på hvordan vi kan endre variabelnavn
+-   Rstudio vil at et variabelnavn skal starte med en bokstav. Vi skal senere se på hvordan vi kan endre variabelnavn
 
 -   Dersom en ikke ønsker Excel format når vi laster ned fra SSB, kan vi trykke lagre data som til venstre meny når vi har fått opp forhåndsvisningen av datasettet.
 

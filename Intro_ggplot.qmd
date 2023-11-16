@@ -25,11 +25,9 @@ ggplot(
   geom_smooth(method = lm, colour = "red")
 ```
 
-En annen måte å lage det samme plottet på (gg2).
-Det beste er å bruke første alternativ (gg1)
+En annen måte å lage det samme plottet på (gg2). Det beste er å bruke første alternativ (gg1)
 
-ggarrange setter disse to identiske plottene vedsiden av hverandre.
-Dersom du skriver nrow = 2 vil du få plottene på to rekker
+ggarrange setter disse to identiske plottene vedsiden av hverandre. Dersom du skriver nrow = 2 vil du få plottene på to rekker
 
 ```{r}
 gg1 <-   ggplot(data = mtcars, mapping = aes(x = disp, y = mpg)) +
@@ -45,10 +43,7 @@ ggarrange(gg1, gg2, labels = c
           nrow = 1)
 ```
 
-geom_point ( ) har mapping som første argument.
-Dette har bare betydning dersom en ikke spesifiserer hvilket argument man bruker eks geom_point (data = mtcars, mapping( ).
-Du kan finne hvilke argumenter som skal stå i hvilken rekkefølge, så kan en søke opp geom_point opp i help fanen.
-En ryddig måte å lage et plott på er å uansett spesifisere argumentet selv om en skriver det i riktig rekkefølge
+geom_point ( ) har mapping som første argument. Dette har bare betydning dersom en ikke spesifiserer hvilket argument man bruker eks geom_point (data = mtcars, mapping( ). Du kan finne hvilke argumenter som skal stå i hvilken rekkefølge, så kan en søke opp geom_point opp i help fanen. En ryddig måte å lage et plott på er å uansett spesifisere argumentet selv om en skriver det i riktig rekkefølge
 
 ```{r}
 ggplot(data = mtcars, mapping = aes
@@ -59,13 +54,9 @@ ggplot(data = mtcars, mapping = aes
   geom_point()
 ```
 
-I dette plotet har vil lagt til en til variabel, slik at det til sammen blir 3 variabler i samme plot.
-Vi bruker farge (eller andre symboler) til å differansiere hvor mange sylindre den enkelte bilen har.
+I dette plotet har vil lagt til en til variabel, slik at det til sammen blir 3 variabler i samme plot. Vi bruker farge (eller andre symboler) til å differansiere hvor mange sylindre den enkelte bilen har.
 
-Vi kan differansiere punktene med farge, form, størrelse og gjennomsiktighet.
-Dersom man ønsker å bruke disse differansieringsmulighetene må de stå inne i en asteticfunksjon (mappin = aes( )).
-Dersom en for eksempel sette farge på utsiden av denne asteticfunksjon, vil alle punktene få samme farge (colour = "blue").
-Står det innenfor en asteticfunksjon, så endres det for hver variabel, star det utenfor gjelder det samme for alle variablene
+Vi kan differansiere punktene med farge, form, størrelse og gjennomsiktighet. Dersom man ønsker å bruke disse differansieringsmulighetene må de stå inne i en asteticfunksjon (mappin = aes( )). Dersom en for eksempel sette farge på utsiden av denne asteticfunksjon, vil alle punktene få samme farge (colour = "blue"). Står det innenfor en asteticfunksjon, så endres det for hver variabel, star det utenfor gjelder det samme for alle variablene
 
 ```{r}
 ggplot() + 
@@ -77,8 +68,7 @@ ggplot() +
          alpha = wt))
 ```
 
-Viktig å tenke på leser.
-Det kan fort bli rot dersom en putter for mye inn i samme plot.
+Viktig å tenke på leser. Det kan fort bli rot dersom en putter for mye inn i samme plot.
 
 ```{r}
 ggplot() +
@@ -99,12 +89,7 @@ ggplot() +
     shape = "trans-\nmission")
 ```
 
-Vi kan lage egen tekst på forklaringstekst til høyre for plottet.
-Vi bruker funksjonen lads(.).
-Her betyr \\ linjeskjift i selve koden.
-i dette plottet har vi også bestemt at automatgir har fått en sirkel og manueltgir har fått en trekant.
-Der er ikke bare selve plottet som bør se ryddig ut, men også selve koden.
-Du kan selv forstå koden med en gang du skriver den, men kommer du tilbake om to uker, så er den kanskje ikke like lett å forstå lenger
+Vi kan lage egen tekst på forklaringstekst til høyre for plottet. Vi bruker funksjonen lads(.). Her betyr \\ linjeskjift i selve koden. i dette plottet har vi også bestemt at automatgir har fått en sirkel og manueltgir har fått en trekant. Der er ikke bare selve plottet som bør se ryddig ut, men også selve koden. Du kan selv forstå koden med en gang du skriver den, men kommer du tilbake om to uker, så er den kanskje ikke like lett å forstå lenger
 
 ```{r}
 ggplot() +
@@ -153,13 +138,9 @@ ggplot() +
   )
 ```
 
-Her er det lagt til en smooth som er en tilpasset linje som skal tilpasses etter punktene.
-Dette er et lag som blir lagt på toppen av ggplot.
-Dersom en ønsker å endre litt på denne linjen, går vi på hjelp for å se på de ulike opsjonene.
-I dette eksemplet bruker vi opsjonen span (på toppen av hjelp siden på geom_smooth kan en se hva som er standard på de ulike opsjonene).
+Her er det lagt til en smooth som er en tilpasset linje som skal tilpasses etter punktene. Dette er et lag som blir lagt på toppen av ggplot. Dersom en ønsker å endre litt på denne linjen, går vi på hjelp for å se på de ulike opsjonene. I dette eksemplet bruker vi opsjonen span (på toppen av hjelp siden på geom_smooth kan en se hva som er standard på de ulike opsjonene).
 
-I dette eksemplet har vi også endret på konfogenten.
-For å se forskjell på 95 % og 99 % har vi lagt to like geom_smooth oppå hverandre, der den eneste forskjellen er kontofenten (level =)
+I dette eksemplet har vi også endret på konfogenten. For å se forskjell på 95 % og 99 % har vi lagt to like geom_smooth oppå hverandre, der den eneste forskjellen er kontofenten (level =)
 
 Til slutt har vi lagt inn en linjærlinje
 
@@ -184,9 +165,7 @@ ggplot(
     )
 ```
 
-Her har vi lagt til en robust linjærmodell.
-Denne tar bort de mest ekstreme verdiene.
-denne funsjonen ligger inne i pakken MASS og selve fusjonen heter rlm
+Her har vi lagt til en robust linjærmodell. Denne tar bort de mest ekstreme verdiene. denne funsjonen ligger inne i pakken MASS og selve fusjonen heter rlm
 
 ```{r}
 ## create tibble from scratch
@@ -198,8 +177,7 @@ df_mean <-   tibble(
 df_mean
 ```
 
-Dersom en ønsker flere datasett inn i samme plott, kan vi lage et nytt datasett.
-I dette tilfellet er det regnet ut gjennomsnitt på 4, 6 og 8 sylindre
+Dersom en ønsker flere datasett inn i samme plott, kan vi lage et nytt datasett. I dette tilfellet er det regnet ut gjennomsnitt på 4, 6 og 8 sylindre
 
 ```{r}
 ggplot(
@@ -260,8 +238,7 @@ ggplot(
     )
 ```
 
-Her er det funksjonen facet_wrap (\~cut_numer).
-n=3 betyr at variabelen skal deles opp i 3 ulike kategorier
+Her er det funksjonen facet_wrap (\~cut_numer). n=3 betyr at variabelen skal deles opp i 3 ulike kategorier
 
 ```{r}
 #new dataframe to use for the grey points
@@ -304,10 +281,7 @@ ggplot(
     )
 ```
 
-I dette plottet har vi fått inn alle variablene inn på samme plott.
-Dette for å se hvordan datasettet ser ut som en helhet.
-Det er bare de variablene som er aktuelle i vektklassen som har farge.
-Vi gjør dette med å legge inn ett gråt plott helt i bunn.
+I dette plottet har vi fått inn alle variablene inn på samme plott. Dette for å se hvordan datasettet ser ut som en helhet. Det er bare de variablene som er aktuelle i vektklassen som har farge. Vi gjør dette med å legge inn ett gråt plott helt i bunn.
 
 ```{r}
 ggplot(
@@ -345,12 +319,8 @@ ggplot(
     )
 ```
 
-Dette plottet viser flott at det for eksempel ikke finne tunge bilder som har 4 eller 6 sylinder motor.
-Dette får vi til med å bruke funksjonen facet_grid.
-Her er sylinder satt som fastvariabel, men vekt er satt som ???????
+Dette plottet viser flott at det for eksempel ikke finne tunge bilder som har 4 eller 6 sylinder motor. Dette får vi til med å bruke funksjonen facet_grid. Her er sylinder satt som fastvariabel, men vekt er satt som ???????
 
 ## Andre type grafikk i Rstudio
 
-Vi velger å bruke ggplot.
-Dette er et mer moderne pakke og jobber godt med tidyvers.
-Greit dersom en skal bruke bare en variabel (eks histogram)
+Vi velger å bruke ggplot. Dette er et mer moderne pakke og jobber godt med tidyvers. Greit dersom en skal bruke bare en variabel (eks histogram)
