@@ -1,0 +1,375 @@
+---
+title: "models"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: setup
+# get tidyverse to shut up
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(modelr)
+  options(na.action = na.warn)
+  library(nycflights13)
+  library(lubridate)
+  library(tseries)
+  library(patchwork)
+  library(hexbin)
+  library(broom)
+})
+```
+
+## introduksjon
+
+-   vi ser på diamant datasettet, her har vi en negativ sammenheng mellom cut og pris
+
+```{r}
+ggplot(diamonds, aes(cut, price)) + geom_boxplot() +
+  ggtitle("The connection between quality of cut and price")
+```
+
+-   sammenheng farge og pris, D er beste farge og j er verste farge
+
+```{r}
+ggplot(diamonds, aes(color, price)) + geom_boxplot() +
+  ggtitle("The connection between quality of colour and price")
+```
+
+-   sammenheng mellom klarhet og pris. der IF har best klarhet, og l1 har dårligst klarhet
+
+```{r}
+ggplot(diamonds, aes(clarity, price)) + geom_boxplot() +
+  ggtitle("The connection between clarity and price")
+```
+
+-   alle disse variablene har negativ virkning på pris, grunnen kan være at store diamanter har høyere pris, men dårligere kvalitet
+-   vi skal prøve å begrense datasette litt og tar bort ve største diamantene
+
+```{r}
+diamonds2 <- diamonds %>% 
+  filter(carat <= 2.5)
+```
+
+```{r}
+diamonds <- diamonds
+```
+
+```{r}
+g1 <- ggplot(data = diamonds2) + 
+  geom_point(mapping = aes(x = carat, y = price), 
+             size = 0.3,
+             alpha = 0.05
+             )
+g2 <- ggplot(diamonds2, aes(x = carat, y = price)) + 
+  geom_hex(bins = 50)
+# made possible by patchwork
+g1 + g2
+```
+
+-   samme model, bare vi bruker log, vi ser at det blir en mer linjær modell
+
+```{r}
+g3 <- ggplot(data = diamonds2) + 
+  geom_point(mapping = aes(x = log(carat), y = log(price)), 
+             size = 0.3,
+             alpha = 0.05
+  )
+g4 <- ggplot(diamonds2, aes(x = log(carat), y = log(price))) + 
+  geom_hex(bins = 50)
+g3 + g4
+```
+
+-   statistisk modell
+
+```{r}
+mod_ll <- 'log(price) ~ log(carat)'
+lm_ll <- lm(formula = mod_ll, data = diamonds2)
+coefficients(lm_ll)
+```
+
+```{r}
+diamonds2 <- diamonds2 %>% 
+  add_residuals(lm_ll, var = "resid_lm_ll")
+# gjennomsnitt
+res_m <- mean(diamonds2$resid_lm_ll)
+#standardavvik
+res_sd <- sd(diamonds2$resid_lm_ll)
+
+diamonds2 %>% 
+  ggplot() +
+  geom_histogram(mapping = aes(x = resid_lm_ll, y = ..density..),
+    alpha = 0.3, binwidth = 0.01) +
+  stat_function(fun = dnorm, args = list(mean = res_m, sd = res_sd))
+```
+
+-   vi skal teste om dette er normalfordelt
+
+```{r}
+jarque.bera.test(diamonds2$resid_lm_ll)
+```
+
+-   her viser vi en korrelasjonsmatrise, dette gjør vi med funksjonen pairs ( )
+
+```{r}
+diamonds2 %>% 
+  select(carat, cut, color, clarity) %>%
+  slice_sample(n = 200) %>% 
+  pairs()
+```
+
+-   her skjekker vi residualene vår
+
+```{r}
+diamonds2 <- diamonds2 %>% 
+  add_residuals(lm_ll, "log_resid")
+ggplot(diamonds2, aes(log(carat), log_resid)) + 
+  geom_hex(bins = 50)
+```
+
+-   her tar vi diamant datasettet igjen og bruker cut kvalitet og resudialene etter justert for størrelse
+-   vi har tatt bort størrelse variabelen og ser her at jo bedre kuttet diamanter, jo høyere pris
+
+```{r}
+ggplot(diamonds2, aes(cut, log_resid)) + geom_boxplot() +
+  ggtitle("Better cuts have higher prices (as we would suspect)")
+```
+
+### forelesning 21.11
+
+# Mange modeller
+
+```{r}
+newgapminder <- gapminder
+```
+
+```{r}
+print(head(newgapminder, n = 20))
+```
+
+```{r}
+newgapminder %>% 
+  ggplot(aes(year, lifeExp, group = country, colour = continent)) +
+    geom_line(alpha = 1/3)
+```
+
+-   nå skal vi filtrere ut for Afrika
+
+```{r}
+newgapminder %>% 
+  filter(continent == "Africa")  %>% 
+  ggplot(aes(year, lifeExp, group = country)) +
+    geom_line()
+```
+
+-   nå skal vi ta ut for Norge og lage tre plott der det ene inneholder hele datasettet, den andre inneholder prediksjoner. den siste er for residualer
+
+```{r}
+no <- newgapminder %>% filter(country == "Norway")
+no_mod = lm(lifeExp ~ year, data = no)
+no1 <- no %>%
+  ggplot(mapping = aes(x = year, y = lifeExp)) +
+  geom_line() +
+  ggtitle("Full data =")
+no2 <- no %>% 
+  add_predictions(no_mod, var = "pred_no") %>% 
+  ggplot(mapping = aes(x = year, y = pred_no)) +
+  geom_line() +
+  ggtitle("Linear trend + ")
+no3 <- no %>% 
+  add_residuals(no_mod, var = "res_no") %>% 
+  ggplot(mapping = aes(x = year, y = res_no)) +
+  geom_line() +
+  ggtitle(" Residuals")
+# since we use package patchwork
+no1 + no2 + no3
+```
+
+-   datasettet inneholder 90 land, skal vi vireklig gjøre dette på alle?
+-   vi kan bruke funksjonen nest( )
+    -   lager dataframe for vert enkelt land og lager en enkelfuksjon som vi kan bruke på alle landene
+    -   vi må først grupere det vi ønsker å grupere på (gorup_by( )) og så bruke nest( )
+
+```{r}
+by_country <- newgapminder |>
+  group_by(country, continent) |> 
+  nest()
+```
+
+-   vi ser at nest ( ) har laget en ny kolonne som heter data
+
+```{r}
+by_country
+```
+
+-   nå skal vi plukke ut Norge fra den nye dataframen
+
+```{r}
+by_country %>% 
+  # pick Norway
+  filter(country == "Norway") %>%
+  # pick the data variable for norway
+  .$data %>% 
+  # we want the content
+  .[[1]]
+```
+
+-   nå skal vi lage flere modeller
+-   legger inn et argument som er dataframe
+-   vi skal lage den funksjonen som vi har laget på dele datasettet
+
+```{r}
+country_model <- function(a_df) {
+  # same simple model for each country
+  lm(lifeExp ~ year, data = a_df)
+}
+```
+
+-   her sier vi at funksjonene vi har laget skal brukes på data-kolonnen som vi lagde litt lenger oppe. Dataen som komme ut skal legges i en ny kolonne som kalles model
+
+```{r}
+by_country <- by_country %>% 
+  # remember map(data, function), our data named data
+  mutate(model = map(data, .f = country_model))
+```
+
+```{r}
+print(by_country, n = 3)
+```
+
+-   nå skal vi plukke ut Norge
+
+```{r}
+by_country %>% 
+  # pick Norway
+  filter(country == "Norway") %>%
+  # pick the data variable for norway
+  .$model %>% 
+  # we want the content
+  .[[1]] %>% 
+  summary()
+```
+
+-   selv om vi omorganiserer datasettet, vil modellen følge landet sitt
+-   nå skal vi legge til residualer og prediksjon
+
+```{r}
+by_country <- by_country %>% 
+  mutate(
+    # remember map2(var1, var2, function)
+    # we want to vary data and model
+    # one combination for each country
+    #add_residuals(data, model)
+    res = map2(data, model, add_residuals)
+  )
+```
+
+-   hvordan skal vi få ut residualene?
+-   for å pakke ut må vi bruke funksjonen unnest( )
+
+```{r}
+res_90c <- by_country %>% 
+  unnest(res)
+print(res_90c, n = 4)
+```
+
+-   filtre ut på bare Norge
+
+```{r}
+res_90c %>% 
+  filter(country == "Norway") %>% 
+  print(n = 5)
+```
+
+-   dersom vi vil plotte residualene for Norge
+
+```{r}
+res_90c %>% 
+  filter(country == "Norway") %>% 
+  ggplot(mapping = aes(x = year, y = resid)) + 
+  geom_point() +
+  geom_line() +
+  geom_hline(yintercept = 0)
+```
+
+-   Dersom vi ønsker residualer for alle landene
+
+```{r}
+res_90c %>% 
+  ggplot(mapping = aes(x = year, y = resid)) + 
+  # because of group = country one line for each country
+  geom_line(aes(group = country), alpha = 1/6) +
+  # general smooth for all countries
+  geom_smooth(se = FALSE) +
+  geom_hline(yintercept = 0)
+```
+
+-   denne figuren ble de veldig mye i. vi skal nå lage faceter med tanke på hvert kontigent
+
+```{r}
+res_90c %>% 
+  ggplot(mapping = aes(x = year, y = resid)) + 
+  # because of group = country one line for each country
+  geom_line(aes(group = country), alpha = 1/3) +
+  geom_hline(yintercept = 0, colour = "white") +
+  facet_wrap(~continent)
+```
+
+-   nå regner vi ut gjennomsnitt
+
+```{r}
+by_country %>% 
+  unnest(c(data)) %>% 
+  group_by(continent, year) %>% 
+  summarise(mean_lifeExp = mean(lifeExp)
+           ) %>% 
+  ggplot(aes(x = year, y = mean_lifeExp, colour = continent)) +
+    geom_line(lwd = 1)
+```
+
+## kvalitet på model
+
+-   finnes en pakke (broom) som kan hjelpe oss
+    -   vi skal bruke funksjonen glance( )
+-   vi har lyst til å se på de nordiske landene
+-   vi gir beskjed om at vi vil ha en dataframe i retur (map_df)
+
+```{r}
+options(tibble.width = 60)
+by_country %>% 
+  filter(
+    country %in% c("Norway", "Sweden", 
+                        "Denmark", "Finland")
+    ) %>% 
+  .$model %>% 
+  map_df(glance) %>% 
+  print()
+```
+
+-   en kanskje en lurere måte å gjøre det på, er å legge resultatet i en ny kolonne
+
+```{r}
+by_country %>%
+    filter(
+    country %in% c(
+      "Norway", "Sweden",
+      "Denmark", "Finland"
+    )
+  ) %>% 
+  mutate(mod_summary = map(.x = model, .f = glance)) %>%
+  unnest(mod_summary) %>% 
+  # don't want too many rows in the slide
+  print(n = 4)
+```
+
+-   nå skal vi gjøre det på alle landene
+
+```{r}
+by_country %>%
+  mutate(mod_summary = map(.x = model, .f = glance)) %>%
+  unnest(mod_summary) %>% 
+  group_by(continent) %>% 
+  summarise(mean_r_adj = mean(adj.r.squared))
+```
+
+-   

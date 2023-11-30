@@ -10,6 +10,7 @@ suppressPackageStartupMessages({
   library(tidyverse)
   library(lubridate)
   library(magrittr)
+  library(microbenchmark)
 })
 ```
 
@@ -184,4 +185,306 @@ decide_numvec <- function(x) {
 ```{r}
 decide_numvec(c(10, -2, 0))
 decide_numvec(15)
+```
+
+# vektorer
+
+```{r}
+set.seed(333)
+my_df <- tibble(
+  x = rnorm(10, mean = 100, sd = 10),
+  y = runif(10, min = 30, max = 130),
+  z = rlnorm(10, 2, 2)
+)
+set.seed(1234)
+my_dates <- tibble(
+  y = 1999:2008,
+  m = sample(1:12, size = 10, replace = TRUE),
+  # make it simple, seed 1234 gives no impossible date
+  d = sample(1:31, size = 10, replace = TRUE),
+  date = make_date(year = y, month = m, day = d)
+)
+```
+
+```{r}
+print(my_df)
+```
+
+```{r}
+# viser hva som er inni denne dataframen
+typeof(my_df)
+```
+
+```{r}
+#viser hvilken klasse det er 
+class(my_df)
+```
+
+```{r}
+# viser struktiren til dataframen (det sammen en vi vil se i environment)
+str(my_df)
+```
+
+-   vi repeterer litt og lager en vektor med små bokstaver
+
+```{r}
+x <- letters
+x
+```
+
+-   
+-   vi kan droppe verdier fra inni en vektor med å bruke \[ \]
+-   vi trenger ikke å ha det som skal fjernes i stigende elle synkende rekkefølge
+-   vi du vet hva du ikke har med, bruker du en -c, dersom du vet hva du vil ha med så bruker vi ingen minus
+
+```{r}
+x[-c(1:4, 8, 14, 6, 19)]
+```
+
+```{r}
+x[15]
+```
+
+-   vi kan også bruke dobbel \[\[ \]\], da plukker vi ut kun et element, når vi har en ren vektor, så kan vi bruke enkel og dobble klammer om hverandre. det vil gi det samme resultatet
+    -   med bruk av dobble klammer, får vi ikke med "innpakningen" bare selve verdien
+
+```{r}
+x[[15]]
+```
+
+-   vi gir navn til elementene i x
+
+```{r}
+names(x) <- LETTERS
+x
+```
+
+```{r}
+x[15]
+```
+
+```{r}
+x[[15]]
+```
+
+-   vi gjør det sammen med en dataframe
+
+```{r}
+my_df$y
+```
+
+-   vi sier nå at vi skal plukke ut vektor nummer to fra en tibbel
+
+```{r}
+my_df[2]
+```
+
+```{r}
+my_df[[2]]
+```
+
+-   vi skal nå velge ut en vektor via en pipe
+
+```{r}
+my_df |>
+  select(x)
+```
+
+-   dersom vi ønsker en ren vektor fra en tibbel bruker vi funksjonen pull( )
+
+```{r}
+my_df |>
+  select(x) |>
+  pull()
+```
+
+-   dersom vi lager en vektor, men ikke har tallene enda, kan vi lage en vektor med NULL
+
+```{r}
+vec <- NULL
+```
+
+-   hvordan bli kvitt navn på en vektor
+
+```{r}
+names(x) <- NULL
+x
+```
+
+# itterasjon
+
+-   gjør det samme tingen gang på gang
+
+```{r}
+set.seed(333)
+my_df <- tibble(
+  x = rnorm(10, mean = 100, sd = 10),
+  y = runif(10, min = 30, max = 130),
+  z = rlnorm(10, 2, 2)
+)
+my_df1 <- my_df[1:3, 1:3]
+```
+
+## loop
+
+-   viktig å sette av plass i et minne før en starter på en loop. Alloker først for så å sette data inni den
+-   kjører gjennom en sekvens
+    -   eks: for (i in 1:n) da kjører først r gjennom der i er 1 for så der 2 er i og så videre til 10
+-   det som står inni { } er bodyen for interasjonen. det en skal gjøre noe med
+-   i dette eksemplet sier vi at det er 5 + i der i står i for ( )
+    -   L står for at det skal være heltall
+
+```{r}
+# allocate empty vector for output
+out <- vector(mode = "integer", length = 10)
+for (i in 1L:10L) {
+  out[[i]] <- 5L + i
+}
+out
+```
+
+-   vi kan gjøre dette på en tibbel også, men da må vi tenke litt mer. Her har vi en loop inni en loop. først for kollonnenne, så for rekkene
+
+```{r}
+my_df1
+```
+
+-   vi bruker her i for rekker og j for kolonner
+-   vi gjør kollonner først før rekkene
+-   vi sier her at først skal en ta første rekke i første kollonne og legger til 5, så skal vi ta rekke to og kollonne en og legge til 5, så skal vi ta rekke tre og kollonne en og legge til 5 osv.
+
+```{r}
+# allocate empty vector for output
+out <- tibble(x = vector(mode = "double", length = 3),
+              y = vector(mode = "double", length = 3),
+              z = vector(mode = "double", length = 3))
+# i row, j column
+# column
+for (j in 1:ncol(my_df1)) {
+# row
+  for (i in 1:nrow(my_df1)) {
+    out[[i, j]] <-  my_df1[[i, j]] + 5
+  }
+}
+out
+```
+
+-   Vi endre litt på loopen, vi sier her at gjør det så mange ganger vi har kolonner
+-   vi sier også at den skal starte på my_df1 kollonne x
+
+```{r}
+# allocate empty vector for output
+out2 <- tibble(x = vector(mode = "double", length = 3),
+              y = vector(mode = "double", length = 3),
+              z = vector(mode = "double", length = 3))
+# i row, j column
+# column
+for (j in seq_along(my_df1)) {
+# row
+  for (i in seq_along(my_df1$x)) {
+    out2[[i, j]] <-  my_df1[[i, j]] + 5
+  }
+}
+out2
+```
+
+## r måten og gjøre loops på
+
+```{r}
+my_df1 + 5
+```
+
+## tidyverse måten 
+
+-   Vi gjør det via map funksjoner som kommer i purrr pakken
+
+-   gjør det via en funksjon
+
+-   mapper en funksjon på en vektor (backstage lager da r en loop)
+
+    -   map() makes a list.
+
+    ```{=html}
+    <!-- -->
+    ```
+    -   map_lgl() makes a logical vector.
+
+    -   map_int() makes an integer vector. (heltall)
+
+    -   map_dbl() makes a double vector. (desimaltall)
+
+    -   map_chr() makes a character vector.
+
+-   svaret får samme lenge som inputten vår (vektoren)
+
+-   eksempel
+
+    -   Vi får ut gjennomsnittet for hver av kollonnenen i dataframen
+
+```{r}
+map_dbl(my_df, mean)
+```
+
+-   i r er det satt en opsjon med at når vi regner med tall, så skal det bare komme ut et vist antall desimaler, Det samme gjelder ikke for når vi regner med character
+
+```{r}
+as.character(map_dbl(my_df, mean)) 
+```
+
+```{r}
+my_df |>
+  map(median) |>
+  unlist()
+```
+
+-   vi kan bruke de argumentene vi vil, så lenge vi har sakt hva den skal gjøre først. Her har vi regnet ut gjennomsnitt og tar bort de mest ekstreme verdier med 10 % på hver andre. vi sier også at dersom de er noen NA verdier, så skal disse tas bort
+
+```{r}
+# trim 0.1 removes 10% of data each side
+my_df %>%  map_dbl(mean, trim = 0.1, na.rm = TRUE)
+```
+
+### anonyme funksjoneri map funksjoner
+
+-   vi kan skrive funksjonen vår uten å gi det et navn
+-   kan brukes når funksjonen bare skal brukes en gang
+
+```{r}
+#lager en ny variabel
+my_df <- my_df %>% mutate(w = c(rep("A", 5), rep("B", 5)))
+my_df %>% 
+  #splitter opp en variabel her blir det et datasett for a og ett for b
+  split(.$w) %>% 
+  map(function(df) lm(x ~ y, data = df))
+```
+
+-   vi kan bruke forkortelse på function
+
+```{r}
+my_df <- my_df %>% mutate(w = c(rep("A", 5), rep("B", 5)))
+my_models <- my_df %>% 
+  split(.$w) %>% 
+  map(~lm(x ~ y, data = .))
+```
+
+-   her sier vi først at vi vil ha summen, ut av det vil vi har justert r\^2
+
+```{r}
+my_models %>% 
+  map(summary) %>% 
+  map_dbl(~.$adj.r.squared)
+```
+
+### map og flere argumenter
+
+-   map2( ) kan brukes hvis vi skal bruke to argumenter
+
+```{r}
+# normal dist. with mu=0, sd=1, mu=0.5 sd=1.25 etc.
+mu <- c(0, 0.5, 1, 2, 3)
+sd <- c(1, 1.25, 2, 5, 2)
+norm_df <- map2(mu, sd, rnorm, n = 10) %>%
+  set_names(., paste("rnorm_mu", mu, "_sd", sd, sep = "")) %>% 
+  as_tibble()
+head(norm_df, n = 3)
 ```
